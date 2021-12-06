@@ -42,7 +42,7 @@ optional arguments:
 
 ## Usage
 
-You will need to first install `variant_definitions` in an appropriate place in your filesystem
+You will need to first install [`variant_definitions`](https://github.com/phe-genomics/variant_definitions) in an appropriate place in your filesystem
 
 ```
 $ git clone https://github.com/phe-genomics/variant_definitions
