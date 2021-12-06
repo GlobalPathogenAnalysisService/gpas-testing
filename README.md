@@ -37,3 +37,18 @@ optional arguments:
                         the read length
   --depth DEPTH         the depth
 ```
+
+## Usage
+
+You will need to first install `variant_definitions` in an appropriate place in your filesystem
+
+```
+$ git clone https://github.com/phe-genomics/variant_definitions
+```
+
+First, we can simply create a set of perfect reads for the SARS-CoV-2 reference
+
+```
+$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output reference
+$ ls -lrt reference*
+```
