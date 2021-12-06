@@ -51,4 +51,28 @@ First, we can simply create a set of perfect reads for the SARS-CoV-2 reference
 ```
 $ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output reference
 $ ls -lrt reference*
+reference.fasta   reference_1.fastq reference_2.fastq
 ```
+
+Next, let's create two Illumina paried Omicron FASTQ files using the default values for the read length (250) and depth (500).
+
+```
+$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output omicron --variant_name Omicron --output omicron_r250_d500
+$ ls omicron_r250_d500*
+omicron_r250_d500.fasta   omicron_r250_d500_1.fastq omicron_r250_d500_2.fastq
+```
+
+Now we can increase the average depth 
+
+```
+$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output omicron --variant_name Omicron --output omicron_r250_d1000 --depth 1000
+$ ls omicron_r250_d1000*
+omicron_r250_d1000.fasta   omicron_r250_d1000_1.fastq omicron_r250_d1000_2.fastq
+```
+
+These pairs of `fastq` files (after being compressed using `gzip`) can be used for 
+* automated end-to-end testing of bioinformatics workflows, such as GPAS, since you can knows what the expected consensus sequence (the `fasta` file) should be.
+* preliminary testing of new variants 
+
+Philip W Fowler, 6 Dec 2021
+
