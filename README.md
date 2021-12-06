@@ -59,7 +59,7 @@ reference.fasta   reference_1.fastq reference_2.fastq
 Next, let's create two Illumina paried Omicron FASTQ files using the default values for the read length (250) and depth (500).
 
 ```
-$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output omicron --variant_name Omicron --output omicron_r250_d500
+$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d500
 $ ls omicron_r250_d500*
 omicron_r250_d500.fasta   omicron_r250_d500_1.fastq omicron_r250_d500_2.fastq
 ```
@@ -67,7 +67,7 @@ omicron_r250_d500.fasta   omicron_r250_d500_1.fastq omicron_r250_d500_2.fastq
 Now we can increase the average depth 
 
 ```
-$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output omicron --variant_name Omicron --output omicron_r250_d1000 --depth 1000
+$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d1000 --depth 1000
 $ ls omicron_r250_d1000*
 omicron_r250_d1000.fasta   omicron_r250_d1000_1.fastq omicron_r250_d1000_2.fastq
 ```
