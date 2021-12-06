@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='gpas-covid-perfect-reads',
-    version='1.0',
+    version='1.0.0',
     description='Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing',
     author='Philip W Fowler',
     author_email='philip.fowler@ndm.ox.ac.uk',

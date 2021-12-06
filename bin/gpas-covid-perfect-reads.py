@@ -11,11 +11,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--variant_definitions",required=True,help="the path to the variant_definitions repository/folder from phe-genomics ")
     parser.add_argument("--output",required=True,help="the stem of the output file")
-    parser.add_argument("--variant_name",required=False,help="a JSON file specifying the mutations to apply to the covid reference, if not specified, you'll get a wildtype sequence")
-    parser.add_argument("--reference",required=False,default='config/MN908947.3.gbk',help="the GenBank file of the covid reference. If not specified, the MN908947.3.gbk reference will be used.")
-    parser.add_argument("--primer_definition",default='config/covid-artic-v3.json',help="the JSON file specifying the primer scheme used. If not specified, covid-artic-v3.json will be used")
-    parser.add_argument("--read_length",default=250,type=int,help="the read length, default length = 250")
-    parser.add_argument("--depth",default=500,type=int,help="the depth, default depth = 500")
+    parser.add_argument("--variant_name",required=False,help="a JSON file specifying the mutations to apply to the covid reference (if not specified, you'll get a wildtype sequence)")
+    parser.add_argument("--reference",required=False,default='config/MN908947.3.gbk',help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
+    parser.add_argument("--primer_definition",default='config/covid-artic-v3.json',help="the JSON file specifying the primer scheme used (if not specified, covid-artic-v3.json will be used)")
+    parser.add_argument("--read_length",default=250,type=int,help="the read length (default value is 250)")
+    parser.add_argument("--depth",default=500,type=int,help="the depth (default value is 500)")
     options = parser.parse_args()
 
     # load in the covid reference using gumpy
