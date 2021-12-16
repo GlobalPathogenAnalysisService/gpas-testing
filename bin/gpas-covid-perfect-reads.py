@@ -6,6 +6,8 @@ import numpy
 import pyfastaq
 import gumpy
 
+import gpas_covid_perfect_reads as gcpr
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -21,97 +23,44 @@ if __name__ == "__main__":
     # load in the covid reference using gumpy
     covid_reference=gumpy.Genome(options.reference)
 
-    variant_reference=copy.deepcopy(covid_reference)
-
     # load the definitions of the amplicons
     with open(options.primer_definition) as f:
         amplicons = json.load(f)
 
     # only if a variant has been specified, otherwise output reference
-    if options.variant_name:
+    if not options.variant_name:
 
-        variant_defintion_files=glob.glob(options.variant_definitions+'/variant_yaml/*.yml')
+        variant_definitions=False
 
-        variant_definitions={}
+        description = "Reference"
 
-        for i in variant_defintion_files:
+        genome=covid_reference.build_genome_string()
 
-            with open(i) as INPUT:
-                a=yaml.safe_load(INPUT)
-                if 'who-label' in a.keys() and a['who-label'] is not None:
-                    variant_definitions[a['who-label']]=a
+        index_lookup=covid_reference.nucleotide_index
+
+    else:
+
+        variant_definitions=gcpr.load_variant_definitions('../variant_definitions')
 
         # check that the variant that has been specified has a YAML file!
         assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
 
-        for mutation in variant_definitions[options.variant_name]['variants']:
+        variant=gcpr.VariantGenome(covid_reference, variant_definitions[options.variant_name])
 
-            mutation_type = mutation['type']
+        description = options.variant_name
+        #+"_"+options.primer_definition.split('.')[0]+"_readlength_"+str(options.read_length)+"_depth_"+str(options.depth)
 
-            if mutation_type=='SNP':
+        genome=variant.genome
 
-                # build the mask to isolate the nucleotide
-                mask=variant_reference.nucleotide_index==mutation['one-based-reference-position']
+        index_lookup=variant.index_lookup
 
-                # check the definition agrees with the reference sequence
-                assert variant_reference.nucleotide_sequence[mask]==mutation['reference-base'].lower()
-
-                # only now mutate the base
-                variant_reference.nucleotide_sequence[mask]=mutation['variant-base'].lower()
-
-            elif mutation_type=='MNP':
-
-                length=len(mutation['reference-base'])
-
-                for i in range(length):
-
-                    mask=variant_reference.nucleotide_index==(mutation['one-based-reference-position']+i)
-
-                    # check the definition agrees with the reference sequence
-                    assert variant_reference.nucleotide_sequence[mask][0]==mutation['reference-base'].lower()[i]
-
-                    # only now mutate the base
-                    variant_reference.nucleotide_sequence[mask]=mutation['variant-base']
-
-            elif mutation_type=='insertion':
-
-                mask=variant_reference.nucleotide_index==mutation['one-based-reference-position']+1
-
-                variant_reference.is_indel[mask]=True
-                variant_reference.indel_length[mask]=len(mutation['variant-base'])-1
-                variant_reference.indel_nucleotides[mask]=mutation['variant-base'][1:].lower()
-
-            elif mutation_type=='deletion':
-
-                mask=variant_reference.nucleotide_index==mutation['one-based-reference-position']+1
-                variant_reference.is_indel[mask]=True
-                variant_reference.indel_length[mask]=-1*(len(mutation['reference-base'])-1)
-                variant_reference.indel_nucleotides[mask]=mutation['reference-base'][1:].lower()
-
-        assert variant_reference!=covid_reference
-
-    else:
-
-        variant_definitions=False
-
-    if options.variant_name:
-        description = options.variant_name #+"_"+options.primer_definition.split('.')[0]+"_readlength_"+str(options.read_length)+"_depth_"+str(options.depth)
-    else:
-        description = "Reference"
-
-    variant_reference.save_fasta(options.output+".fasta",\
-                            fixed_length=False,\
-                            overwrite_existing=True,\
-                            description=description)
-
-
-    # now read the FASTA file back in
-    refs = {}
-    pyfastaq.tasks.file_to_dict(options.output+".fasta", refs)
-    assert len(refs) == 1
-    ref = list(refs.values())[0]
+    # # now read the FASTA file back in
+    # refs = {}
+    # pyfastaq.tasks.file_to_dict(options.output+".fasta", refs)
+    # assert len(refs) == 1
+    # ref = list(refs.values())[0]
+    ref = pyfastaq.sequences.Fasta(id_in=description,seq_in=genome.upper())
     ref = ref.to_Fastq([40] * len(ref))
-
 
     with open(options.output+"_1.fastq", "w") as f1, open(options.output+"_2.fastq", "w") as f2:
         for amplicon_name, amplicon_d in amplicons["amplicons"].items():
@@ -122,8 +71,11 @@ if __name__ == "__main__":
             #  |-------------- amplicon -----------------|
             assert options.read_length < amplicon_d["end"] - amplicon_d["start"] + 1 < 2 * options.read_length
 
-            read1 = ref.subseq(amplicon_d["start"], amplicon_d["start"] + options.read_length)
-            read2 = ref.subseq(amplicon_d["end"] - options.read_length, amplicon_d["end"])
+            start = numpy.where(index_lookup==amplicon_d["start"])[0][0]
+            end = numpy.where(index_lookup==amplicon_d["end"])[0][0]
+
+            read1 = ref.subseq(start, start + options.read_length)
+            read2 = ref.subseq(end - options.read_length, end)
             read2.revcomp()
 
             for i in range(0, int(options.depth / 2)):
