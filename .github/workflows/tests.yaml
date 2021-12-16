@@ -25,6 +25,13 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
 
+    - name: Install gumpy
+      run: |
+        git clone https://github.com/oxfordmmm/gumpy.git
+        cd gumpy
+        python setup.py install --user
+        cd ..
+
     - name: Test with pytest
       run: |
         pytest --exitfirst --verbose --failed-first \
