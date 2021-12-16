@@ -14,6 +14,16 @@ def test_variant_definitions():
     assert 'B.1.1.7' not in variant_definitions.keys()
     assert 'alpha' not in variant_definitions.keys()
 
+def test_mutate_read():
+
+    assert gcpr.mutate_read('AAAAA',0)=='AAAAA'
+
+    assert gcpr.mutate_read('AAAAA',debug_mutations={0:'T'})=='TAAAA'
+
+    assert gcpr.mutate_read('AAAAA',debug_mutations={0:'T',4:'C'})=='TAAAC'
+
+    assert gcpr.mutate_read('AAAAA',debug_mutations={1:'A'})=='AAAAA'
+
 def test_gamma():
 
     # Chose Gamma because it has one insertion and one deletion

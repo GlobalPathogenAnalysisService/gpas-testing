@@ -8,25 +8,7 @@ import gumpy
 
 import gpas_covid_perfect_reads as gcpr
 
-def mutate_read(read,error_rate):
 
-    bases={'A','T','C','G'}
-
-    # convert the read into an array of chars
-    r=numpy.array(list(read.seq))
-
-    # create a list of new mutations
-    new_bases=[]
-    for i in r[mask]:
-        new_bases.append(random.sample(bases ^ set(i),1)[0])
-
-    # set the new values
-    r[mask]=numpy.array(new_bases)
-
-    # recreate the sequence
-    sequence=''.join(i for i in r)
-
-    return(sequence)
 
 
 if __name__ == "__main__":
@@ -117,13 +99,8 @@ if __name__ == "__main__":
                     read2 = ref.subseq(end - length, end)
                     read2.revcomp()
 
-                    # create a mask of where mutations in the read will occur consistent with the error rate
-                    mask=numpy.random.uniform(size=length)<error_rate
-
-                    # only if there are more than zero mutations
-                    if numpy.sum(mask)>0:
-                        read1.seq=mutate_read(read1,error_rate)
-                        read2.seq=mutate_read(read2,error_rate)
+                    read1.seq=mutate_read(read1.seq,error_rate)
+                    read2.seq=mutate_read(read2.seq,error_rate)
 
                     read1.id = f"{amplicon_name}.{i} /1"
                     read2.id = f"{amplicon_name}.{i} /2"
@@ -147,12 +124,8 @@ if __name__ == "__main__":
 
                     length = int(numpy.random.normal(options.read_length,options.read_stddev))
                     read1 = ref.subseq(start, start + length)
-                    mask=numpy.random.uniform(size=length)<error_rate
 
-                    # only if there are more than zero mutations
-                    if numpy.sum(mask)>0:
-                        read1.seq=mutate_read(read1,error_rate)
-
+                    read1.seq=mutate_read(read1.seq,error_rate)
                     read1.id = f"{amplicon_name}.{i} forward"
                     print(read1, file=f1)
 
@@ -161,12 +134,8 @@ if __name__ == "__main__":
                     length = int(numpy.random.normal(options.read_length,options.read_stddev))
                     read2 = ref.subseq(end - length, end)
                     read2.revcomp()
-                    mask=numpy.random.uniform(size=length)<error_rate
 
-                    # only if there are more than zero mutations
-                    if numpy.sum(mask)>0:
-                        read2.seq=mutate_read(read2,error_rate)
-
+                    read2.seq=mutate_read(read2.seq,error_rate)
                     read2.id = f"{amplicon_name}.{i}.2 reverse"
                     print(read2, file=f1)
 

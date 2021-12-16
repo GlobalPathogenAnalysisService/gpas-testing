@@ -13,6 +13,46 @@ def load_variant_definitions(path):
                 variant_definitions[a['who-label']]=a
     return(variant_definitions)
 
+def mutate_read(read,error_rate=0,debug_mutations=None):
+
+    if debug_mutations is None:
+        mask=numpy.random.uniform(size=len(read))<error_rate
+    else:
+        mask=numpy.isin(numpy.arange(0,len(read)),list(debug_mutations.keys()))
+
+    # only if there are more than zero mutations
+    if numpy.sum(mask)==0:
+
+        return(read)
+
+    else:
+
+        bases={'A','T','C','G'}
+
+        # create a list of new mutations
+        new_bases=[]
+
+        # convert the read into an array of chars
+        r=numpy.array(list(read))
+
+        if debug_mutations is None:
+
+            for i in r[mask]:
+                new_bases.append(random.sample(bases ^ set(i),1)[0])
+
+        else:
+
+            new_bases=list(debug_mutations.values())
+            print(new_bases,list(debug_mutations.values()))
+
+        # set the new values
+        r[mask]=numpy.array(new_bases)
+
+        # recreate the sequence
+        sequence=''.join(i for i in r)
+
+        return(sequence)
+
 class VariantGenome(object):
 
     def __init__(self, reference_genome, variant_definition):
