@@ -8,9 +8,6 @@ import gumpy
 
 import gpas_covid_perfect_reads as gcpr
 
-
-
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -50,9 +47,14 @@ if __name__ == "__main__":
 
         index_lookup=covid_reference.nucleotide_index
 
+        covid_reference.save_fasta(options.output+".fasta",\
+                                fixed_length=False,\
+                                overwrite_existing=True,\
+                                description=description)
+
     else:
 
-        variant_definitions=gcpr.load_variant_definitions('../variant_definitions')
+        variant_definitions=gcpr.load_variant_definitions(options.variant_definitions)
 
         # check that the variant that has been specified has a YAML file!
         assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
@@ -65,6 +67,11 @@ if __name__ == "__main__":
         genome=variant.genome
 
         index_lookup=variant.index_lookup
+
+        variant.variant.save_fasta(options.output+".fasta",\
+                                fixed_length=False,\
+                                overwrite_existing=True,\
+                                description=description)
 
     # # now read the FASTA file back in
     # refs = {}
@@ -99,8 +106,8 @@ if __name__ == "__main__":
                     read2 = ref.subseq(end - length, end)
                     read2.revcomp()
 
-                    read1.seq=mutate_read(read1.seq,error_rate)
-                    read2.seq=mutate_read(read2.seq,error_rate)
+                    read1.seq=gcpr.mutate_read(read1.seq,error_rate)
+                    read2.seq=gcpr.mutate_read(read2.seq,error_rate)
 
                     read1.id = f"{amplicon_name}.{i} /1"
                     read2.id = f"{amplicon_name}.{i} /2"
@@ -125,7 +132,7 @@ if __name__ == "__main__":
                     length = int(numpy.random.normal(options.read_length,options.read_stddev))
                     read1 = ref.subseq(start, start + length)
 
-                    read1.seq=mutate_read(read1.seq,error_rate)
+                    read1.seq=gcpr.mutate_read(read1.seq,error_rate)
                     read1.id = f"{amplicon_name}.{i} forward"
                     print(read1, file=f1)
 
@@ -135,7 +142,7 @@ if __name__ == "__main__":
                     read2 = ref.subseq(end - length, end)
                     read2.revcomp()
 
-                    read2.seq=mutate_read(read2.seq,error_rate)
+                    read2.seq=gcpr.mutate_read(read2.seq,error_rate)
                     read2.id = f"{amplicon_name}.{i}.2 reverse"
                     print(read2, file=f1)
 
