@@ -1,4 +1,4 @@
-import pathlib, copy, yaml, numpy
+import pathlib, copy, yaml, numpy, random
 
 
 def load_variant_definitions(path):
