@@ -16,10 +16,12 @@ setup(
     scripts=['bin/gpas-covid-synthetic-reads.py'],
     install_requires=[
         'numpy >= 1.21.2',
-        'pyfastaq >= 3.17.0'
+        'pyfastaq >= 3.17.0',
+        'pyyaml'
         ],
     python_requires='>=3.8',
     license="MIT",
+    packages=['gpas_covid_synthetic_reads'],
     package_data={'': ['data/*']},
     include_package_data=True,
     zip_safe=False

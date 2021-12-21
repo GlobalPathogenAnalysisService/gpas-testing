@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import copy, glob, json, yaml, argparse, random, pkg_resources
+import copy, glob, json, argparse, random, pkg_resources
 
-import numpy
-import pyfastaq
+import numpy, yaml, pyfastaq
+
 import gumpy
 
 import gpas_covid_synthetic_reads as gcsr

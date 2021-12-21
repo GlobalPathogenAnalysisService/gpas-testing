@@ -1,5 +1,6 @@
-import pathlib, copy, yaml, numpy, random
+import pathlib, copy, numpy, random
 
+import yaml
 
 def load_variant_definitions(path):
     variant_definitions_path=pathlib.Path(path) / "variant_yaml/"

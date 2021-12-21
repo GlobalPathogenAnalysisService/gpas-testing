@@ -1,4 +1,5 @@
 pyfastaq
 numpy
+pyyaml
 pytest
 pytest-cov
