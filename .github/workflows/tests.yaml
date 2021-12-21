@@ -27,7 +27,7 @@ jobs:
 
     - name: Install variant_definitions
       run: |
-        https://github.com/phe-genomics/variant_definitions.git                
+        git clone https://github.com/phe-genomics/variant_definitions.git                
 
     - name: Install gumpy
       run: |
