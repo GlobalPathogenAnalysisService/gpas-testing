@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import copy, glob, json, argparse, random, pkg_resources
+import copy, glob, argparse, random, pkg_resources
 
-import numpy, yaml, pyfastaq
+import numpy, yaml, pyfastaq, pandas
 from tqdm import tqdm
 import gumpy
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--output",required=True,help="the stem of the output file")
     parser.add_argument("--variant_name",required=False,help="a JSON file specifying the mutations to apply to the covid reference (if not specified, you'll get a wildtype sequence)")
     parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
-    parser.add_argument("--primer_definition",default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v3.json'),help="the JSON file specifying the primer scheme used (if not specified, covid-artic-v3.json will be used)")
+    parser.add_argument("--primers",default='artic-v3',help="the name of the primer schema, must be on of artic-v3, artic-v4, midnight-1200")
     parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--read_length",default=250,type=int,help="the read length in bases (default value is 250)")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
@@ -35,9 +35,36 @@ if __name__ == "__main__":
 
     bases={'A','T','C','G'}
 
+    assert options.primers in ['artic-v3','artic-v4','midnight-1200']
+
+    if options.primers=='artic-v3':
+        primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v3.qcovid.tsv')
+    elif options.primers=='artic-v4':
+        primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v4.qcovid.tsv')
+    elif options.primers=='midnight-1200':
+        primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/midnight-1200.qcovid.tsv')
+
     # load the definitions of the amplicons
-    with open(options.primer_definition) as f:
-        amplicons = json.load(f)
+    primers=pandas.read_csv(primer_scheme_file,\
+                        sep='\t',
+                        names=['pool','name','seq','bool1','bool2','start'])
+
+    def assign_end(row):
+        return(row['start']+len(row.seq)-1)
+
+    primers['end']=primers.apply(assign_end,axis=1)
+
+    def find_handedness(row):
+        return(row['name'].split('_')[-1])
+
+    primers['hand']=primers.apply(find_handedness,axis=1)
+
+    left=primers.loc[primers.hand=='LEFT']
+    right=primers.loc[primers.hand=='RIGHT']
+
+    amplicons=left.merge(right,left_on='pool',right_on='pool',suffixes=['_left','_right'])
+    amplicons=amplicons[['pool','start_left','end_right']]
+    amplicons.rename(columns={'pool':'name','start_left':'start','end_right':'end'},inplace=True)
 
     # only if a variant has been specified, otherwise output reference
     if not options.variant_name:
@@ -87,6 +114,7 @@ if __name__ == "__main__":
         else:
             outputstem=options.output+"-"+str(repeat)
 
+
         if options.write_fasta:
             variant.save_fasta(outputstem+".fasta",\
                                 fixed_length=False,\
@@ -100,18 +128,19 @@ if __name__ == "__main__":
 
             with open(outputstem+"_1.fastq", "w") as f1, open(outputstem+"_2.fastq", "w") as f2:
 
-                for amplicon_name, amplicon_d in amplicons["amplicons"].items():
+                for idx,row in amplicons.iterrows():
 
+                    amplicon_name = row['name']
                     # We'll make a read pair that looks like this:
                     #
                     #  |------ read1 ------------->
                     #                      <--------- read2 -----|
                     #  |-------------- amplicon -----------------|
 
-                    assert options.read_length < amplicon_d["end"] - amplicon_d["start"] + 1 < 2 * options.read_length
+                    assert options.read_length < row["end"] - row["start"] + 1 < 2 * options.read_length
 
-                    start = numpy.where(index_lookup==amplicon_d["start"])[0][0]
-                    end = numpy.where(index_lookup==amplicon_d["end"])[0][0]
+                    start = numpy.where(index_lookup==row["start"])[0][0]
+                    end = numpy.where(index_lookup==row["end"])[0][0]
 
                     for i in range(0, int(options.depth / 2)):
 
@@ -138,10 +167,13 @@ if __name__ == "__main__":
         elif options.tech=='nanopore':
 
             with open(outputstem+".fastq", "w") as f1:
-                for amplicon_name, amplicon_d in amplicons["amplicons"].items():
 
-                    start = numpy.where(index_lookup==amplicon_d["start"])[0][0]
-                    end = numpy.where(index_lookup==amplicon_d["end"])[0][0]
+                for idx,row in amplicons.iterrows():
+
+                    amplicon_name = row['name']
+
+                    start = numpy.where(index_lookup==row["start"])[0][0]
+                    end = numpy.where(index_lookup==row["end"])[0][0]
 
                     for i in range(0, int(options.depth / 2)):
 
