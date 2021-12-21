@@ -1,12 +1,12 @@
 import gumpy, copy, numpy
 
-import gpas_covid_perfect_reads as gcpr
+import gpas_covid_synthetic_reads as gcsr
 
 covid_reference=gumpy.Genome('config/MN908947.3.gbk')
 
 def test_variant_definitions():
 
-    variant_definitions=gcpr.load_variant_definitions('../variant_definitions')
+    variant_definitions=gcsr.load_variant_definitions('../variant_definitions')
 
     assert 'Alpha' in variant_definitions.keys()
     assert 'Delta' in variant_definitions.keys()
@@ -16,21 +16,21 @@ def test_variant_definitions():
 
 def test_mutate_read():
 
-    assert gcpr.mutate_read('AAAAA',0)=='AAAAA'
+    assert gcsr.mutate_read('AAAAA',0)=='AAAAA'
 
-    assert gcpr.mutate_read('AAAAA',debug_mutations={0:'T'})=='TAAAA'
+    assert gcsr.mutate_read('AAAAA',debug_mutations={0:'T'})=='TAAAA'
 
-    assert gcpr.mutate_read('AAAAA',debug_mutations={0:'T',4:'C'})=='TAAAC'
+    assert gcsr.mutate_read('AAAAA',debug_mutations={0:'T',4:'C'})=='TAAAC'
 
-    assert gcpr.mutate_read('AAAAA',debug_mutations={1:'A'})=='AAAAA'
+    assert gcsr.mutate_read('AAAAA',debug_mutations={1:'A'})=='AAAAA'
 
 def test_gamma():
 
     # Chose Gamma because it has one insertion and one deletion
 
-    variant_definitions=gcpr.load_variant_definitions('../variant_definitions')
+    variant_definitions=gcsr.load_variant_definitions('../variant_definitions')
 
-    gamma=gcpr.VariantGenome(covid_reference, variant_definitions['Gamma'])
+    gamma=gcsr.VariantGenome(covid_reference, variant_definitions['Gamma'])
 
     start=11280
     stop=11305
