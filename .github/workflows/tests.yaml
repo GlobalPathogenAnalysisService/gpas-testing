@@ -27,13 +27,14 @@ jobs:
 
     - name: Install variant_definitions
       run: |
-        git clone https://github.com/phe-genomics/variant_definitions.git                
+        git clone https://github.com/phe-genomics/variant_definitions.git
 
     - name: Install gumpy
       run: |
         git clone https://github.com/oxfordmmm/gumpy.git
         cd gumpy
-        python setup.py install --user
+        pip3 install -r requirements.txt
+        python3 setup.py install --user
         cd ..
 
     - name: Test with pytest
