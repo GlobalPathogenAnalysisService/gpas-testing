@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--variant_definitions",required=True,help="the path to the variant_definitions repository/folder from phe-genomics ")
     parser.add_argument("--output",required=True,help="the stem of the output file")
-    parser.add_argument("--variant_name",required=False,help="a JSON file specifying the mutations to apply to the covid reference (if not specified, you'll get a wildtype sequence)")
+    parser.add_argument("--variant_name",default='Reference',help="the name of the variant, default is Reference")
     parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
     parser.add_argument("--primers",default='artic-v3',help="the name of the primer schema, must be on of artic-v3, artic-v4, midnight-1200")
     parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     amplicons.rename(columns={'pool':'name','start_left':'start','end_right':'end'},inplace=True)
 
     # only if a variant has been specified, otherwise output reference
-    if not options.variant_name:
+    if options.variant_name == 'Reference':
 
         variant_definitions=False
 
