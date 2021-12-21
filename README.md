@@ -1,4 +1,4 @@
-# gpas-covid-perfect-reads
+# gpas-covid-synthetic-reads
 Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing
 
 ## Installation
@@ -8,15 +8,15 @@ You first need to install [`gumpy`](https://github.com/oxfordmmm/gumpy) as
 Once complete, 
 
 ```
-$ git clone https://github.com/GenomePathogenAnalysisService/gpas-covid-perfect-reads.git
-$ cd gpas-covid-perfect-reads
+$ git clone https://github.com/GenomePathogenAnalysisService/gpas-covid-synthetic-reads.git
+$ cd gpas-covid-synthetic-reads
 $ python3 setup.py install --user
 ```
 
 Check it has installed correctly
 
 ```
-$ usage: gpas-covid-perfect-reads.py [-h] --variant_definitions VARIANT_DEFINITIONS --output OUTPUT
+$ usage: gpas-covid-synthetic-reads.py [-h] --variant_definitions VARIANT_DEFINITIONS --output OUTPUT
                                    [--variant_name VARIANT_NAME] [--reference REFERENCE]
                                    [--primer_definition PRIMER_DEFINITION] [--read_length READ_LENGTH]
                                    [--depth DEPTH]
@@ -51,7 +51,7 @@ $ git clone https://github.com/phe-genomics/variant_definitions
 First, we can simply create a set of perfect reads for the SARS-CoV-2 reference
 
 ```
-$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --output reference
+$ gpas-covid-synthetic-reads.py --variant_definitions ../variant_definitions/ --output reference
 $ ls -lrt reference*
 reference.fasta   reference_1.fastq reference_2.fastq
 ```
@@ -59,7 +59,7 @@ reference.fasta   reference_1.fastq reference_2.fastq
 Next, let's create two Illumina paried Omicron FASTQ files using the default values for the read length (250) and depth (500).
 
 ```
-$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d500
+$ gpas-covid-synthetic-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d500
 $ ls omicron_r250_d500*
 omicron_r250_d500.fasta   omicron_r250_d500_1.fastq omicron_r250_d500_2.fastq
 ```
@@ -67,7 +67,7 @@ omicron_r250_d500.fasta   omicron_r250_d500_1.fastq omicron_r250_d500_2.fastq
 Now we can increase the average depth 
 
 ```
-$ gpas-covid-perfect-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d1000 --depth 1000
+$ gpas-covid-synthetic-reads.py --variant_definitions ../variant_definitions/ --variant_name Omicron --output omicron_r250_d1000 --depth 1000
 $ ls omicron_r250_d1000*
 omicron_r250_d1000.fasta   omicron_r250_d1000_1.fastq omicron_r250_d1000_2.fastq
 ```

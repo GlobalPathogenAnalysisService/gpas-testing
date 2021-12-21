@@ -6,13 +6,13 @@ with open("README.md", "r") as f:
     README = f.read()
 
 setup(
-    name='gpas-covid-perfect-reads',
+    name='gpas-covid-synthetic-reads',
     version='1.0.0',
     description='Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing',
     author='Philip W Fowler',
     author_email='philip.fowler@ndm.ox.ac.uk',
-    url='https://github.com/GenomePathogenAnalysisService/gpas-covid-perfect-reads',
-    scripts=['bin/gpas-covid-perfect-reads.py'],
+    url='https://github.com/GenomePathogenAnalysisService/gpas-covid-synthetic-reads',
+    scripts=['bin/gpas-covid-synthetic-reads.py'],
     install_requires=[
         'numpy >= 1.21.2',
         'pyfastaq >= 3.17.0'
