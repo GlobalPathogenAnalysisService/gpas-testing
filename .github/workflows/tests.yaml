@@ -25,6 +25,10 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
 
+    - name: Install variant_definitions
+      run: |
+        https://github.com/phe-genomics/variant_definitions.git                
+
     - name: Install gumpy
       run: |
         git clone https://github.com/oxfordmmm/gumpy.git

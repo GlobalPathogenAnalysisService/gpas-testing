@@ -1,8 +1,8 @@
-import gumpy, copy, numpy
+import gumpy, copy, numpy, pkg_resources
 
 import gpas_covid_synthetic_reads as gcsr
 
-covid_reference=gumpy.Genome('config/MN908947.3.gbk')
+covid_reference=gumpy.Genome(pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'))
 
 def test_variant_definitions():
 

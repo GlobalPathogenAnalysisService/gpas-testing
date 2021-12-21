@@ -69,11 +69,11 @@ class VariantGenome(object):
 
         self.genome=self.variant.build_genome_string()
 
-        self.variant.save_fasta(self.name+".fasta",\
-                                fixed_length=False,\
-                                overwrite_existing=True,\
-                                description=self.name)
-
+        # self.variant.save_fasta(self.name+".fasta",\
+        #                         fixed_length=False,\
+        #                         overwrite_existing=True,\
+        #                         description=self.name)
+        #
     def _create_variant(self):
 
         for mutation in self.definition['variants']:

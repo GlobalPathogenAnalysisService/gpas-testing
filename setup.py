@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+from gpas_covid_synthetic_reads import __version__
 
 with open("README.md", "r") as f:
     README = f.read()
 
 setup(
     name='gpas-covid-synthetic-reads',
-    version='1.0.0',
+    version=__version__,
     description='Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing',
     author='Philip W Fowler',
     author_email='philip.fowler@ndm.ox.ac.uk',
@@ -19,7 +20,7 @@ setup(
         ],
     python_requires='>=3.8',
     license="MIT",
-    package_data={'': ['config/MN908947.3.gbk','config/covid-artic-v3.json']},
+    package_data={'': ['data/*']},
     include_package_data=True,
     zip_safe=False
     )
