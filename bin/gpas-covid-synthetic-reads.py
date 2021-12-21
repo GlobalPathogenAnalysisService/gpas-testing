@@ -35,13 +35,13 @@ if __name__ == "__main__":
 
     bases={'A','T','C','G'}
 
-    assert options.primers in ['artic-v3','artic-v4','midnight-1200']
+    assert options.primers in ['articv3','articv4','midnight1200']
 
-    if options.primers=='artic-v3':
+    if options.primers=='articv3':
         primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v3.qcovid.tsv')
-    elif options.primers=='artic-v4':
+    elif options.primers=='articv4':
         primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v4.qcovid.tsv')
-    elif options.primers=='midnight-1200':
+    elif options.primers=='midnight1200':
         primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/midnight-1200.qcovid.tsv')
 
     # load the definitions of the amplicons
