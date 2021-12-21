@@ -17,7 +17,8 @@ setup(
     install_requires=[
         'numpy >= 1.21.2',
         'pyfastaq >= 3.17.0',
-        'pyyaml'
+        'pyyaml',
+        'tqdm'
         ],
     python_requires='>=3.8',
     license="MIT",

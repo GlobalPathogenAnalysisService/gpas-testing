@@ -14,12 +14,19 @@ def load_variant_definitions(path):
                 variant_definitions[a['who-label']]=a
     return(variant_definitions)
 
-def mutate_read(read,error_rate=0,debug_mutations=None):
+def mutate_read(read,error_rate=0,snps=0,debug_mutations=None):
 
-    if debug_mutations is None:
+    assert error_rate<=1
+
+    if debug_mutations is not None:
+        mask=numpy.isin(numpy.arange(0,len(read)),list(debug_mutations.keys()))
+    elif snps>0:
+        positions=random.sample(range(len(read)),snps)
+        mask=numpy.isin(numpy.arange(0,len(read)),positions)
+    elif error_rate>0:
         mask=numpy.random.uniform(size=len(read))<error_rate
     else:
-        mask=numpy.isin(numpy.arange(0,len(read)),list(debug_mutations.keys()))
+        raise ValueError('Read will not be mutated!')
 
     # only if there are more than zero mutations
     if numpy.sum(mask)==0:
