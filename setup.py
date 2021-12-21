@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
     README = f.read()
 
 setup(
-    name='gpas-covid-synthetic-reads',
+    name='gpas_covid_synthetic_reads',
     version=__version__,
     description='Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing',
     author='Philip W Fowler',
