@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--read_length",default=250,type=int,help="the read length in bases (default value is 250)")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
     parser.add_argument("--depth",default=500,type=int,help="the depth (default value is 500)")
-    parser.add_argument("--snps",default=0,type=int,help="the number of snps to randomly introduce into the sequence")
+    parser.add_argument("--snps",nargs='+',default=0,type=int,help="the number of snps to randomly introduce into the sequence")
     parser.add_argument("--repeats",default=1,type=int,help="whether to repeat building the FASTQ files")
     parser.add_argument("--error_rate",default=0.0,type=float,help="the percentage base error rate (default value is 0.0)")
     parser.add_argument("--write_fasta", dest="write_fasta",action="store_true", help="whether to write out the FASTA file for the variant")
