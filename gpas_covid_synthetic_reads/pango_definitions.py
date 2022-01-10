@@ -17,7 +17,9 @@ def load_lineages_dataframe():
 
     return lineages_reference
 
-def load_pango_definitions(path, lineages_reference):
+def load_pango_definitions(path):
+
+    lineages_reference = load_lineages_dataframe()
 
     pango_definitions = {}
 
@@ -245,6 +247,6 @@ class PangoGenome(object):
                 all_mutations_identified = False
                 # print(lineage,i)
 
-        if all_mutations_identified:
-            print(self.name)
-        self.variant.save_fasta(self.name+".fasta")
+        # if all_mutations_identified:
+        #     print(self.name)
+        # self.variant.save_fasta(self.name+".fasta")

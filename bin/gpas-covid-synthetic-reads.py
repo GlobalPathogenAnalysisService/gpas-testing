@@ -17,12 +17,13 @@ if __name__ == "__main__":
     parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
     parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--primers",nargs='+',default=['articv3'],help="the name of the primer schema, must be on of articv3, articv4, midnight1200")
-    parser.add_argument("--read_length",default=250,type=int,help="the read length in bases (default value is 250)")
+    parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
     parser.add_argument("--depth",nargs='+',default=[500],type=int,help="the depth (default value is 500)")
     parser.add_argument("--snps",nargs='+',default=[0],type=int,help="the number of snps to randomly introduce into the sequence")
     parser.add_argument("--repeats",default=1,type=int,help="how many repeats to create")
     parser.add_argument("--error_rate",nargs='+',default=[0.0],type=float,help="the percentage base error rate (default value is 0.0)")
+    parser.add_argument("--dropped_amplicons",nargs='+',required=False,help="the names of one or more amplicons to drop i.e. have no reads. The given name(s) must match amplicon(s) in the primer scheme.")
     parser.add_argument("--write_fasta", dest="write_fasta",action="store_true", help="whether to write out the FASTA file for the variant")
     options = parser.parse_args()
 
@@ -34,6 +35,9 @@ if __name__ == "__main__":
     bases={'A','T','C','G'}
 
     assert not (options.variant_definitions and options.pango_definitions), 'cannot specify both variant_definitions and pango_definitions'
+
+    if options.dropped_amplicons is not None:
+        assert len(options.primers)==1, 'can only specify dropped amplicons for a single primer scheme!'
 
     for primer_name in options.primers:
         assert primer_name in ['articv3','articv4','midnight1200']
@@ -66,6 +70,11 @@ if __name__ == "__main__":
         amplicons=left.merge(right,left_on='pool',right_on='pool',suffixes=['_left','_right'])
         amplicons=amplicons[['pool','start_left','end_right']]
         amplicons.rename(columns={'pool':'name','start_left':'start','end_right':'end'},inplace=True)
+        amplicons['length'] = amplicons['end'] - amplicons['start']
+
+        if options.dropped_amplicons is not None:
+            for i in options.dropped_amplicons:
+                assert i in list(amplicons['name']), 'amplicon '+i+' not found in '+primer_name+' scheme'
 
         # only if a variant has been specified, otherwise output reference
         if options.variant_name == 'Reference':
@@ -92,8 +101,8 @@ if __name__ == "__main__":
                 variant_source = 'phe'
 
             elif options.pango_definitions:
-                lineages_reference=gcsr.load_lineages_dataframe()
-                variant_definitions=gcsr.load_pango_definitions(options.pango_definitions,lineages_reference)
+
+                variant_definitions=gcsr.load_pango_definitions(options.pango_definitions)
 
                 # check that the variant that has been specified has a YAML file!
                 assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
@@ -139,6 +148,9 @@ if __name__ == "__main__":
 
                         if options.output is None:
                             outputstem=options.variant_name+"-"+variant_source + '-' + options.tech+'-'+primer_name+'-'+str(snps)+'snps-'+str(depth)+'depth-'+str(error_rate)+'error-'+str(repeat)
+                            if options.dropped_amplicons is not None:
+                                outputstem += ''.join('-' + str(i) for i in options.dropped_amplicons)
+                                outputstem += '-dropped'
                         else:
                             outputstem=options.output
 
@@ -159,20 +171,26 @@ if __name__ == "__main__":
                                 for idx,row in amplicons.iterrows():
 
                                     amplicon_name = row['name']
+
+                                    if options.dropped_amplicons is not None and amplicon_name in options.dropped_amplicons:
+                                        continue
                                     # We'll make a read pair that looks like this:
                                     #
                                     #  |------ read1 ------------->
                                     #                      <--------- read2 -----|
                                     #  |-------------- amplicon -----------------|
-
-                                    assert options.read_length < row["end"] - row["start"] + 1 < 2 * options.read_length
+                                    if options.read_length is not None:
+                                        assert options.read_length < row["end"] - row["start"] + 1 < 2 * options.read_length
 
                                     start = numpy.where(index_lookup==row["start"])[0][0]
                                     end = numpy.where(index_lookup==row["end"])[0][0]
 
                                     for i in range(0, int(depth / 2)):
 
-                                        length = int(numpy.random.normal(options.read_length,options.read_stddev))
+                                        if options.read_length is None:
+                                            length = end - start + 1
+                                        else:
+                                            length = int(numpy.random.normal(options.read_length,options.read_stddev))
 
                                         read1 = ref.subseq(start, start + length)
                                         read2 = ref.subseq(end - length, end)
@@ -200,12 +218,18 @@ if __name__ == "__main__":
 
                                     amplicon_name = row['name']
 
+                                    if options.dropped_amplicons is not None and amplicon_name in options.dropped_amplicons:
+                                        continue
+
                                     start = numpy.where(index_lookup==row["start"])[0][0]
                                     end = numpy.where(index_lookup==row["end"])[0][0]
 
                                     for i in range(0, int(depth / 2)):
 
-                                        length = int(numpy.random.normal(options.read_length,options.read_stddev))
+                                        if options.read_length is None:
+                                            length = end - start + 1
+                                        else:
+                                            length = int(numpy.random.normal(options.read_length,options.read_stddev))
                                         read1 = ref.subseq(start, start + length)
 
                                         if error_rate>0:
@@ -216,7 +240,11 @@ if __name__ == "__main__":
 
                                     for i in range(0, int(depth / 2)):
 
-                                        length = int(numpy.random.normal(options.read_length,options.read_stddev))
+                                        if options.read_length is None:
+                                            length = end - start + 1
+                                        else:
+                                            length = int(numpy.random.normal(options.read_length,options.read_stddev))
+
                                         read2 = ref.subseq(end - length, end)
                                         read2.revcomp()
 
