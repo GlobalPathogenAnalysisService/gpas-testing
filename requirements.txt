@@ -3,4 +3,3 @@ numpy
 pyyaml
 pytest
 pytest-cov
-tqdm

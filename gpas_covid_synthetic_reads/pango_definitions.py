@@ -25,9 +25,16 @@ def load_pango_definitions(path, lineages_reference):
 
     for i in lineages_reference['pango_lineage']:
 
+        who_label = lineages_reference[lineages_reference['pango_lineage']==i]['who_label'].values[0]
+
+        if who_label == 'Epsilon' and i == 'cB.1.427':
+            continue
+        elif who_label == 'Omicron' and i != 'cB.1.1.529':
+            continue
+
         with open(constellations_path / (i + '.json') ) as INPUT:
 
-            pango_definitions[i]=json.load(INPUT)
+            pango_definitions[who_label]=json.load(INPUT)
 
     return pango_definitions
 
@@ -66,9 +73,15 @@ def determine_closet_codon(current_codon, possible_codons):
 
 class PangoGenome(object):
 
-    def __init__(self, sample_genome, pango_definition, lineage):
+    def __init__(self, reference_genome, pango_definition, who_lineage):
 
-        amino_acid_to_codon=create_amino_acid_to_codon(sample_genome)
+        self.definition = pango_definition
+        self.name = who_lineage
+        self.reference = reference_genome
+        self.variant = copy.deepcopy(reference_genome)
+        self.index_lookup=copy.deepcopy(reference_genome.nucleotide_index)
+
+        self.amino_acid_to_codon=create_amino_acid_to_codon(self.variant)
 
         constellation_to_gumpy_lookup = {'spike': 'S',
                                  'S': 'S',
@@ -107,11 +120,11 @@ class PangoGenome(object):
                     idx = int(cols[1][1:pos])
                     alt = cols[1][pos+1:].lower()
 
-                    mask = sample_genome.nucleotide_index == idx
+                    mask = self.variant.nucleotide_index == idx
 
-                    sample_genome.is_indel[mask] = True
-                    sample_genome.indel_length[mask] = 1 * len(alt)
-                    sample_genome.indel_nucleotides[mask] = alt
+                    self.variant.is_indel[mask] = True
+                    self.variant.indel_length[mask] = 1 * len(alt)
+                    self.variant.indel_nucleotides[mask] = alt
 
                 else:
 
@@ -120,15 +133,15 @@ class PangoGenome(object):
                     idx = int(cols[1][1:-1])
                     alt = cols[1][-1]
 
-                    mask = sample_genome.nucleotide_index == idx
+                    mask = self.variant.nucleotide_index == idx
 
                     # have to bypass since this appears twice in the BA.2 definition...
                     if i !='nuc:C15714T':
                         # insist that the specified ref/before base matches what is the reference genome
-                        assert sample_genome.nucleotide_sequence[mask][0] == ref.lower(), (sample_genome.nucleotide_sequence[mask][0], cols)
+                        assert self.variant.nucleotide_sequence[mask][0] == ref.lower(), (self.variant.nucleotide_sequence[mask][0], cols)
 
                     # now mutate the base
-                    sample_genome.nucleotide_sequence[mask] = alt.lower()
+                    self.variant.nucleotide_sequence[mask] = alt.lower()
 
             elif cols[0] == 'del':
 
@@ -136,20 +149,20 @@ class PangoGenome(object):
 
                 number_bases_deleted = int(cols[2])
 
-                mask=sample_genome.nucleotide_index == idx
+                mask=self.variant.nucleotide_index == idx
 
-                sample_genome.is_indel[mask] = True
-                sample_genome.indel_nucleotides[mask] = -1 * number_bases_deleted
+                self.variant.is_indel[mask] = True
+                self.variant.indel_nucleotides[mask] = -1 * number_bases_deleted
 
-            elif cols[0] in constellation_to_gumpy_lookup.keys() and constellation_to_gumpy_lookup[cols[0]] in sample_genome.genes.keys():
+            elif cols[0] in constellation_to_gumpy_lookup.keys() and constellation_to_gumpy_lookup[cols[0]] in self.variant.genes.keys():
 
                 # translate to what the gene is called in gumpy (and thence the GenBank file)
                 gene_name = constellation_to_gumpy_lookup[cols[0]]
 
-                assert sample_genome.contains_gene(gene_name)
+                assert self.variant.contains_gene(gene_name)
 
                 # build the Gene object
-                gene = sample_genome.build_gene(gene_name)
+                gene = self.variant.build_gene(gene_name)
 
                 number_of_amino_acids=sum([i.isalpha() for i in cols[1]])
 
@@ -172,10 +185,10 @@ class PangoGenome(object):
                     idx=gene.nucleotide_index[gene.gene_position==aa_num]
 
                     # create a genome mask
-                    mask=numpy.isin(sample_genome.nucleotide_index,idx)
+                    mask=numpy.isin(self.variant.nucleotide_index,idx)
 
-                    sample_genome.is_indel[mask] = True
-                    sample_genome.indel_nucleotides[mask] = -1 * (3 * number_of_amino_acids)
+                    self.variant.is_indel[mask] = True
+                    self.variant.indel_nucleotides[mask] = -1 * (3 * number_of_amino_acids)
 
                 else:
 
@@ -208,7 +221,7 @@ class PangoGenome(object):
                         current_codon = gene.codons[mask][0]
 
                         # find out what codons would encode the ALT amino acid
-                        possible_codons = amino_acid_to_codon[alt]
+                        possible_codons = self.amino_acid_to_codon[alt]
 
                         # work out which of these requires the fewest number of base changes
                         new_codon = determine_closet_codon(current_codon, possible_codons)
@@ -217,10 +230,10 @@ class PangoGenome(object):
                         idx=gene.nucleotide_index[gene.gene_position==aa_num]
 
                         # create a genome mask
-                        mask=numpy.isin(sample_genome.nucleotide_index,idx)
+                        mask=numpy.isin(self.variant.nucleotide_index,idx)
 
                         # mutate the genome to the new codon which corresponds to the mutated amino acid
-                        sample_genome.nucleotide_sequence[mask] = numpy.array([i for i in new_codon])
+                        self.variant.nucleotide_sequence[mask] = numpy.array([i for i in new_codon])
 
         #     elif cols[0].upper() in constellation_genome['genes'].keys():
         #         print('mutation in gene, harder')
@@ -233,5 +246,5 @@ class PangoGenome(object):
                 # print(lineage,i)
 
         if all_mutations_identified:
-            print(lineage)
-        sample_genome.save_fasta(lineage+".fasta")
+            print(self.name)
+        self.variant.save_fasta(self.name+".fasta")
