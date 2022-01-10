@@ -54,3 +54,6 @@ def test_gamma():
     i0=numpy.where(gamma.index_lookup==start)[0][0]+1
     i1=numpy.where(gamma.index_lookup==stop)[0][0]
     assert gamma.genome[i0:i1]=='aacgaacaaacaa'
+
+
+# for i in c*csv; do awk -F ',' '(NR>1) {print FILENAME, $5}' $i; done
