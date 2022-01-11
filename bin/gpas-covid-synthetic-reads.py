@@ -43,16 +43,18 @@ if __name__ == "__main__":
         assert primer_name in ['articv3','articv4','midnight1200']
 
         if primer_name=='articv3':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v3.qcovid.tsv')
+            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v3.vwf.tsv')
         elif primer_name=='articv4':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/artic-v4.qcovid.tsv')
+            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v4.vwf.tsv')
         elif primer_name=='midnight1200':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/midnight-1200.qcovid.tsv')
+            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-midnight-1200.vwf.tsv')
 
         # load the definitions of the amplicons
         primers=pandas.read_csv(primer_scheme_file,\
                             sep='\t',
-                            names=['pool','name','seq','bool1','bool2','start'])
+                            dtype = {'start': int},
+                            skiprows = 1,
+                            names=['pool', 'name', 'left_or_right', 'seq', 'start'])
 
         def assign_end(row):
             return(row['start']+len(row.seq)-1)
@@ -176,8 +178,8 @@ if __name__ == "__main__":
                             outputstem=options.variant_name+"-"+variant_source + '-' + options.tech+'-'+primer_name+'-'+str(snps)+'snps-'+str(depth)+'depth-'+str(error_rate)+'error-'
                             if options.dropped_amplicons is not None:
                                 outputstem += ''.join(str(i) for i in options.dropped_amplicons)
-                                outputstem += 'dropped'
-                            outputstem += '-'+str(repeat)
+                                outputstem += 'dropped-'
+                            outputstem += str(repeat)
                         else:
                             outputstem=options.output
 

@@ -6,6 +6,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.fasta
 
 # Distribution / packaging
 .Python
