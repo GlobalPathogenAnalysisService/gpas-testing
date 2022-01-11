@@ -122,21 +122,47 @@ if __name__ == "__main__":
 
             variant=variant.variant
 
+        # drop any amplicons specified
+        if options.dropped_amplicons is not None:
+
+            for chosen_amplicon in options.dropped_amplicons:
+
+                row = amplicons[amplicons.name == chosen_amplicon]
+
+                mask = (covid_reference.nucleotide_index >= int(row['start'])) & (covid_reference.nucleotide_index < int(row['end']))
+
+                for idx, row in amplicons.iterrows():
+
+                    if row['name'] == chosen_amplicon:
+                        continue
+
+                    current_amplicon_mask = (variant.nucleotide_index >= int(row['start'])) & (variant.nucleotide_index < int(row['end']))
+
+                    overlap_region = current_amplicon_mask & mask
+
+                    overlap_region = numpy.logical_not(overlap_region)
+
+                    mask = overlap_region & mask
+
+                variant.nucleotide_sequence[mask] = 'n'
+
         for snps in options.snps:
 
-            if snps>0:
+            current_variant = copy.deepcopy(variant)
 
-                snp_indices=numpy.random.choice(variant.nucleotide_index,size=snps,replace=False)
+            if snps > 0:
+
+                snp_indices = numpy.random.choice(current_variant.nucleotide_index,size=snps,replace=False)
 
                 for i in snp_indices:
-                    mask=variant.nucleotide_index==i
-                    current_base=variant.nucleotide_sequence[mask]
-                    bases={'a','t','c','g'}
+                    mask = current_variant.nucleotide_index == i
+                    current_base = current_variant.nucleotide_sequence[mask]
+                    bases = {'a','t','c','g'}
                     new_bases = bases ^ set(current_base)
-                    new_base=random.choice(list(new_bases))
-                    variant.nucleotide_sequence[mask]=new_base
+                    new_base = random.choice(list(new_bases))
+                    current_variant.nucleotide_sequence[mask] = new_base
 
-            genome=variant.build_genome_string()
+            genome = current_variant.build_genome_string()
 
             for depth in options.depth:
 
@@ -147,16 +173,17 @@ if __name__ == "__main__":
                     for repeat in range(options.repeats):
 
                         if options.output is None:
-                            outputstem=options.variant_name+"-"+variant_source + '-' + options.tech+'-'+primer_name+'-'+str(snps)+'snps-'+str(depth)+'depth-'+str(error_rate)+'error-'+str(repeat)
+                            outputstem=options.variant_name+"-"+variant_source + '-' + options.tech+'-'+primer_name+'-'+str(snps)+'snps-'+str(depth)+'depth-'+str(error_rate)+'error-'
                             if options.dropped_amplicons is not None:
-                                outputstem += ''.join('-' + str(i) for i in options.dropped_amplicons)
-                                outputstem += '-dropped'
+                                outputstem += ''.join(str(i) for i in options.dropped_amplicons)
+                                outputstem += 'dropped'
+                            outputstem += '-'+str(repeat)
                         else:
                             outputstem=options.output
 
 
                         if options.write_fasta:
-                            variant.save_fasta(outputstem+".fasta",\
+                            current_variant.save_fasta(outputstem+".fasta",\
                                                 fixed_length=False,\
                                                 overwrite_existing=True,\
                                                 description=description)
@@ -188,7 +215,7 @@ if __name__ == "__main__":
                                     for i in range(0, int(depth / 2)):
 
                                         if options.read_length is None:
-                                            length = end - start + 1
+                                            length = end - start
                                         else:
                                             length = int(numpy.random.normal(options.read_length,options.read_stddev))
 
@@ -227,7 +254,7 @@ if __name__ == "__main__":
                                     for i in range(0, int(depth / 2)):
 
                                         if options.read_length is None:
-                                            length = end - start + 1
+                                            length = end - start
                                         else:
                                             length = int(numpy.random.normal(options.read_length,options.read_stddev))
                                         read1 = ref.subseq(start, start + length)
@@ -241,15 +268,15 @@ if __name__ == "__main__":
                                     for i in range(0, int(depth / 2)):
 
                                         if options.read_length is None:
-                                            length = end - start + 1
+                                            length = end - start
                                         else:
                                             length = int(numpy.random.normal(options.read_length,options.read_stddev))
 
                                         read2 = ref.subseq(end - length, end)
                                         read2.revcomp()
 
-                                        if error_rate>0:
-                                            read2.seq=gcsr.mutate_read(read2.seq,error_rate=error_rate)
+                                        if error_rate > 0:
+                                            read2.seq = gcsr.mutate_read(read2.seq, error_rate = error_rate)
 
                                         read2.id = f"{amplicon_name}.{i}.2 reverse"
                                         print(read2, file=f1)
