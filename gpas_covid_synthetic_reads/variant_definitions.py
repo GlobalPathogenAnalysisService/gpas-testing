@@ -1,8 +1,32 @@
 import pathlib, copy, numpy, random
 
 import yaml
+import pandas
+
+def define_amplicon(tmp, amplicons, reference_genome):
+
+    chosen_amplicon = tmp['name']
+    row = amplicons[amplicons.name == chosen_amplicon]
+    mask = (reference_genome.nucleotide_index >= int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
+
+    for idx, row in amplicons.iterrows():
+
+        if row['name'] == chosen_amplicon:
+            continue
+
+        current_amplicon_mask = (reference_genome.nucleotide_index >= int(row['start'])) & (reference_genome.nucleotide_index < int(row['end']))
+
+        overlap_region = current_amplicon_mask & mask
+
+        overlap_region = numpy.logical_not(overlap_region)
+
+        mask = overlap_region & mask
+
+    return(pandas.Series( [reference_genome.nucleotide_index[mask].min(), reference_genome.nucleotide_index[mask].max()]))
+
 
 def load_variant_definitions(path):
+
     variant_definitions_path=pathlib.Path(path) / "variant_yaml/"
     variant_definitions_files=variant_definitions_path.glob('**/*.yml')
 
