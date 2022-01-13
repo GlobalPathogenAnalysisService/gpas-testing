@@ -34,6 +34,8 @@ for primer_name in ['covid-artic-v3', 'covid-artic-v4', 'covid-midnight-1200']:
         else:
             return int(row['pool'].split('_')[-1])
 
+    # primers = primers[['pool', 'number']]
+
     primers['number'] = primers.apply(number_primer, axis=1)
 
     primers.to_csv(primer_name + '.primers.csv', index=False)
