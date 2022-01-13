@@ -23,10 +23,10 @@ if __name__ == "__main__":
     parser.add_argument("--snps",nargs='+',default=[0],type=int,help="the number of snps to randomly introduce into the sequence")
     parser.add_argument("--repeats",default=1,type=int,help="how many repeats to create")
     parser.add_argument("--error_rate",nargs='+',default=[0.0],type=float,help="the percentage base error rate (default value is 0.0)")
-    parser.add_argument("--dropped_amplicons",nargs='+',required=False,help="the names of one or more amplicons to drop i.e. have no reads. The given name(s) must match amplicon(s) in the primer scheme.")
+    parser.add_argument("--dropped_amplicons", nargs='+', type=int, required=False,help="the names of one or more amplicons to drop i.e. have no reads. The given name(s) must match amplicon(s) in the primer scheme.")
     parser.add_argument("--write_fasta", action="store_true", help="whether to write out the FASTA file for the variant")
-    parser.add_argument("--biased_amplicons", nargs='+', default=None, help="whether to introduce an incorrect SNP in one or more specified amplicons")
-    parser.add_argument("--biased_primers", nargs='+', default=None, help="whether to introduce an incorrect SNP in both primers of an amplicon")
+    parser.add_argument("--biased_amplicons", nargs='+', type=int, default=None, help="whether to introduce an incorrect SNP in one or more specified amplicons")
+    parser.add_argument("--biased_primers", nargs='+', type=int, default=None, help="whether to introduce an incorrect SNP in both primers of an amplicon")
     options = parser.parse_args()
 
     # load in the covid reference using gumpy
@@ -45,57 +45,32 @@ if __name__ == "__main__":
         assert primer_name in ['articv3','articv4','midnight1200']
 
         if primer_name=='articv3':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v3.vwf.tsv')
+            amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v3.amplicons.csv')
         elif primer_name=='articv4':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v4.vwf.tsv')
+            amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v4.amplicons.csv')
         elif primer_name=='midnight1200':
-            primer_scheme_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-midnight-1200.vwf.tsv')
+            amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-midnight-1200.amplicons.csv')
 
         # load the definitions of the amplicons
-        primers=pandas.read_csv(primer_scheme_file,\
-                            sep='\t',
-                            dtype = {'start': int},
-                            skiprows = 1,
-                            names=['pool', 'name', 'left_or_right', 'seq', 'start'])
-
-        def assign_end(row):
-            return(row['start']+len(row.seq)-1)
-
-        primers['end']=primers.apply(assign_end,axis=1)
-
-        def find_handedness(row):
-            return(row['name'].split('_')[-1])
-
-        primers['hand']=primers.apply(find_handedness,axis=1)
-
-        left=primers.loc[primers.hand=='LEFT']
-        right=primers.loc[primers.hand=='RIGHT']
-
-        amplicons=left.merge(right,left_on='pool',right_on='pool',suffixes=['_left','_right'])
-        amplicons=amplicons[['pool','start_left','end_left','start_right','end_right']]
-        amplicons.rename(columns={'pool':'name'},inplace=True)
-        amplicons['start']=amplicons['start_left']
-        amplicons['end']=amplicons['end_right']
-        amplicons['length'] = amplicons['end'] - amplicons['start']
-
-        amplicons[['start_amplicon','end_amplicon']]=amplicons.apply(gcsr.define_amplicon,
-                                                                     amplicons=amplicons,
-                                                                     reference_genome=covid_reference,
-                                                                     axis=1)
+        amplicons = pandas.read_csv(amplicon_file,\
+                                    dtype = {'start': int, 'end': int, 'length': int, 'number': int,
+                                             'start_left': int, 'end_left': int,
+                                             'start_right': int, 'end_right': int,
+                                             'start_amplicon': int, 'end_amplicon': int})
 
         if options.dropped_amplicons is not None:
             for i in options.dropped_amplicons:
-                assert i in list(amplicons['name']), 'amplicon '+i+' not found in '+primer_name+' scheme'
+                assert i in list(amplicons['number']), 'amplicon '+i+' not found in '+primer_name+' scheme'
 
         if options.biased_amplicons is not None:
             for i in options.biased_amplicons:
                 assert i not in options.dropped_amplicons, 'cannot both bias and drop an amplicon'
-                assert i in list(amplicons['name']), 'amplicon '+i+' not found in '+primer_name+' scheme'
+                assert i in list(amplicons['number']), 'amplicon '+i+' not found in '+primer_name+' scheme'
 
         if options.biased_primers is not None:
             for i in options.biased_primers:
                 assert i not in options.dropped_amplicons, 'cannot both bias and drop an amplicon'
-                assert i in list(amplicons['name']), 'amplicon '+i+' not found in '+primer_name+' scheme'
+                assert i in list(amplicons['number']), 'amplicon '+i+' not found in '+primer_name+' scheme'
 
         # only if a variant has been specified, otherwise output reference
         if options.variant_name == 'Reference':
@@ -154,7 +129,7 @@ if __name__ == "__main__":
 
             for chosen_amplicon in options.dropped_amplicons:
 
-                row = amplicons[amplicons.name == chosen_amplicon]
+                row = amplicons[amplicons.number == chosen_amplicon]
 
                 mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index < int(row['end_amplicon']))
 
@@ -164,7 +139,7 @@ if __name__ == "__main__":
 
             for chosen_amplicon in options.biased_amplicons:
 
-                row = amplicons[amplicons.name == chosen_amplicon]
+                row = amplicons[amplicons.number == chosen_amplicon]
 
                 idx = numpy.random.choice(numpy.arange(int(row['start_amplicon']),int(row['end_amplicon'])))
                 mask = covid_reference.nucleotide_index == idx
@@ -181,7 +156,7 @@ if __name__ == "__main__":
 
             for chosen_amplicon in options.biased_primers:
 
-                row = amplicons[amplicons.name == chosen_amplicon]
+                row = amplicons[amplicons.number == chosen_amplicon]
 
                 idx = numpy.random.choice(numpy.arange(int(row['start_left']),int(row['end_left'])))
                 mask = covid_reference.nucleotide_index == idx
@@ -248,17 +223,19 @@ if __name__ == "__main__":
                     for repeat in range(options.repeats):
 
                         if options.output is None:
-                            outputstem=options.variant_name+"-"+variant_source + '-' + options.tech+'-'+primer_name+'-'+str(snps)+'snps-'+str(depth)+'depth-'+str(error_rate)+'error-'
+                            outputstem = options.tech + '-' + primer_name.lower() + '-' + options.variant_name + '-' +\
+                                         variant_source + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
+                                         str(error_rate) + 'e-'
                             if options.dropped_amplicons is not None:
-                                outputstem += ''.join(str(i) for i in options.dropped_amplicons)
-                                outputstem += 'dropped-'
+                                outputstem += ''.join('A' + str(i) for i in options.dropped_amplicons)
+                                outputstem += 'da-'
                             if options.biased_amplicons is not None:
-                                outputstem += ''.join(str(i) for i in options.biased_amplicons)
+                                outputstem += ''.join('A' + str(i) for i in options.biased_amplicons)
                                 outputstem += 'ba-'
                             if options.biased_primers is not None:
-                                outputstem += ''.join(str(i) for i in options.biased_primers)
+                                outputstem += ''.join('A' + str(i) for i in options.biased_primers)
                                 outputstem += 'bp-'
-                            outputstem += str(repeat)
+                            outputstem += str(repeat)+'rep'
                         else:
                             outputstem = options.output
 
@@ -267,15 +244,14 @@ if __name__ == "__main__":
                                                 fixed_length=False,\
                                                 overwrite_existing=True,\
                                                 description=description)
-                            variant.variant.save_fasta(outputstem+"_variant0.fasta",\
-                                                fixed_length=False,\
-                                                overwrite_existing=True,\
-                                                description=description)
-                            variant_alt.variant.save_fasta(outputstem+"_variant1.fasta",\
-                                                fixed_length=False,\
-                                                overwrite_existing=True,\
-                                                description=description)
-
+                            # variant.variant.save_fasta(outputstem+"_variant0.fasta",\
+                            #                     fixed_length=False,\
+                            #                     overwrite_existing=True,\
+                            #                     description=description)
+                            # variant_alt.variant.save_fasta(outputstem+"_variant1.fasta",\
+                            #                     fixed_length=False,\
+                            #                     overwrite_existing=True,\
+                            #                     description=description)
 
                         if options.tech=='illumina':
 
@@ -283,9 +259,9 @@ if __name__ == "__main__":
 
                                 for idx,row in amplicons.iterrows():
 
-                                    amplicon_name = row['name']
+                                    amplicon_number = row['number']
 
-                                    if options.dropped_amplicons is not None and amplicon_name in options.dropped_amplicons:
+                                    if options.dropped_amplicons is not None and amplicon_number in options.dropped_amplicons:
                                         continue
                                     # We'll make a read pair that looks like this:
                                     #
@@ -306,7 +282,7 @@ if __name__ == "__main__":
                                             length = int(numpy.random.normal(options.read_length, options.read_stddev))
 
                                         if options.biased_amplicons is not None or options.biased_primers is not None:
-                                            if (amplicon_name in options.biased_amplicons) or (amplicon_name in options.biased_primers):
+                                            if (amplicon_number in options.biased_amplicons) or (amplicon_number in options.biased_primers):
                                                 read1 = variant_alt_ref.subseq(start, start + length)
                                                 read2 = variant_alt_ref.subseq(end - length, end)
                                             else:
@@ -322,13 +298,13 @@ if __name__ == "__main__":
                                             read1.seq = gcsr.mutate_read(read1.seq, error_rate=error_rate)
                                             read2.seq = gcsr.mutate_read(read2.seq, error_rate=error_rate)
 
-                                        read1.id = f"{amplicon_name}.{i} /1"
-                                        read2.id = f"{amplicon_name}.{i} /2"
+                                        read1.id = f"{amplicon_number}.{i} /1"
+                                        read2.id = f"{amplicon_number}.{i} /2"
                                         print(read1, file=f1)
                                         print(read2, file=f2)
 
-                                        read1.id = f"{amplicon_name}.{i}.2 /2"
-                                        read2.id = f"{amplicon_name}.{i}.2 /1"
+                                        read1.id = f"{amplicon_number}.{i}.2 /2"
+                                        read2.id = f"{amplicon_number}.{i}.2 /1"
                                         print(read1, file=f2)
                                         print(read2, file=f1)
 
@@ -338,9 +314,9 @@ if __name__ == "__main__":
 
                                 for idx, row in amplicons.iterrows():
 
-                                    amplicon_name = row['name']
+                                    amplicon_number = row['number']
 
-                                    if options.dropped_amplicons is not None and amplicon_name in options.dropped_amplicons:
+                                    if options.dropped_amplicons is not None and amplicon_number in options.dropped_amplicons:
                                         continue
 
                                     start = numpy.where(index_lookup == row["start"])[0][0]
@@ -354,7 +330,7 @@ if __name__ == "__main__":
                                             length = int(numpy.random.normal(options.read_length, options.read_stddev))
 
                                         if options.biased_amplicons is not None or options.biased_primers is not None:
-                                            if (amplicon_name in options.biased_amplicons) or (amplicon_name in options.biased_primers):
+                                            if (amplicon_number in options.biased_amplicons) or (amplicon_number in options.biased_primers):
                                                 read1 = variant_alt_ref.subseq(start, start + length)
                                             else:
                                                 read1 = variant_ref.subseq(start, start + length)
@@ -364,7 +340,7 @@ if __name__ == "__main__":
                                         if error_rate > 0:
                                             read1.seq = gcsr.mutate_read(read1.seq, error_rate=error_rate)
 
-                                        read1.id = f"{amplicon_name}.{i} forward"
+                                        read1.id = f"{amplicon_number}.{i} forward"
                                         print(read1, file=f1)
 
                                     for i in range(0, int(depth / 2)):
@@ -375,7 +351,7 @@ if __name__ == "__main__":
                                             length = int(numpy.random.normal(options.read_length, options.read_stddev))
 
                                         if options.biased_amplicons is not None or options.biased_primers is not None:
-                                            if (amplicon_name in options.biased_amplicons) or (amplicon_name in options.biased_primers):
+                                            if (amplicon_number in options.biased_amplicons) or (amplicon_number in options.biased_primers):
                                                 read2 = variant_alt_ref.subseq(end - length, end)
                                             else:
                                                 read2 = variant_ref.subseq(end - length, end)
@@ -387,7 +363,7 @@ if __name__ == "__main__":
                                         if error_rate > 0:
                                             read2.seq = gcsr.mutate_read(read2.seq, error_rate = error_rate)
 
-                                        read2.id = f"{amplicon_name}.{i}.2 reverse"
+                                        read2.id = f"{amplicon_number}.{i}.2 reverse"
                                         print(read2, file=f1)
 
                         else:
