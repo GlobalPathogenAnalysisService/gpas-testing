@@ -6,7 +6,7 @@ covid_reference=gumpy.Genome(pkg_resources.resource_filename("gpas_covid_synthet
 
 def test_variant_definitions():
 
-    variant_definitions=gcsr.load_variant_definitions('../variant_definitions')
+    variant_definitions=gcsr.load_variant_definitions('variant_definitions')
 
     assert 'alpha' in variant_definitions.keys()
     assert 'delta' in variant_definitions.keys()
