@@ -202,11 +202,11 @@ if __name__ == "__main__":
 
             if snps > 0:
 
-                snp_indices = numpy.random.choice(current_variant.nucleotide_index,size=snps,replace=False)
+                snp_indices = numpy.random.choice(current_variant.variant.nucleotide_index,size=snps,replace=False)
 
                 for i in snp_indices:
-                    mask = current_variant.nucleotide_index == i
-                    current_base = current_variant.nucleotide_sequence[mask]
+                    mask = current_variant.variant.nucleotide_index == i
+                    current_base = current_variant.variant.nucleotide_sequence[mask]
                     if current_base == 'n':
                         continue
                     bases = {'a','t','c','g'}
