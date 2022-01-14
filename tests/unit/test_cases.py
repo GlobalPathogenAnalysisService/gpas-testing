@@ -8,11 +8,11 @@ def test_variant_definitions():
 
     variant_definitions=gcsr.load_variant_definitions('../variant_definitions')
 
-    assert 'Alpha' in variant_definitions.keys()
-    assert 'Delta' in variant_definitions.keys()
-    assert 'Omicron' in variant_definitions.keys()
+    assert 'alpha' in variant_definitions.keys()
+    assert 'delta' in variant_definitions.keys()
+    assert 'omicron' in variant_definitions.keys()
     assert 'B.1.1.7' not in variant_definitions.keys()
-    assert 'alpha' not in variant_definitions.keys()
+    assert 'Alpha' not in variant_definitions.keys()
 
 def test_mutate_read():
 
@@ -30,7 +30,7 @@ def test_gamma():
 
     variant_definitions=gcsr.load_variant_definitions('../variant_definitions')
 
-    gamma=gcsr.VariantGenome(covid_reference, variant_definitions['Gamma'])
+    gamma=gcsr.VariantGenome(covid_reference, variant_definitions, 'gamma')
 
     start=11280
     stop=11305
@@ -50,10 +50,12 @@ def test_gamma():
     test_string=''.join(i for i in gamma.reference.nucleotide_sequence[mask])
     assert test_string=='aacgaacaa'
 
-    assert len(gamma.genome)==len(gamma.index_lookup)
+    gamma_genome = gamma.expected.build_genome_string()
+
+    assert len(gamma_genome)==len(gamma.index_lookup)
     i0=numpy.where(gamma.index_lookup==start)[0][0]+1
     i1=numpy.where(gamma.index_lookup==stop)[0][0]
-    assert gamma.genome[i0:i1]=='aacgaacaaacaa'
+    assert gamma_genome[i0:i1]=='aacgaacaaacaa'
 
 
 # for i in c*csv; do awk -F ',' '(NR>1) {print FILENAME, $5}' $i; done
