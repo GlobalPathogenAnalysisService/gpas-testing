@@ -7,3 +7,4 @@ Good_quality
 Negative_control
 Poor_quality
 Positive_control
+Covid_consortium
