@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     error_rates=numpy.array(options.error_rate)/100.
 
-    bases={'A','T','C','G'}
+    bases = {'a','t','c','g'}
 
     assert not (options.variant_definitions and options.pango_definitions), 'cannot specify both variant_definitions and pango_definitions'
 
@@ -78,57 +78,42 @@ if __name__ == "__main__":
                 assert i not in options.drop_amplicons, 'cannot both bias and drop an amplicon'
                 assert i in list(amplicons['number']), 'amplicon '+i+' not found in '+primer_name+' scheme'
 
-        # only if a variant has been specified, otherwise output reference
-        if options.variant_name == 'Reference':
+        if options.variant_definitions:
 
-            variant_definitions = False
+            variant_definitions = gcsr.load_variant_definitions(options.variant_definitions)
 
-            variant = copy.deepcopy(covid_reference)
+            # check that the variant that has been specified has a YAML file!
+            if options.variant_name != 'reference':
+                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
 
-            variant_alt = copy.deepcopy(covid_reference)
+            variant = gcsr.VariantGenome(covid_reference,
+                                         variant_definitions,
+                                         options.variant_name)
 
-            expected = copy.deepcopy(covid_reference)
+            variant_source = 'phe'
 
-            description = "Reference"
+        elif options.pango_definitions:
 
-            index_lookup = variant.nucleotide_index
+            variant_definitions = gcsr.load_pango_definitions(options.pango_definitions)
+
+            # check that the variant that has been specified has a JSON file!
+            if options.variant_name != 'reference':
+                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
+
+            variant = gcsr.PangoGenome(covid_reference,
+                                       variant_definitions,
+                                       options.variant_name)
+
+            variant_source = 'cov'
 
         else:
-
-            if options.variant_definitions:
-
-                variant_definitions=gcsr.load_variant_definitions(options.variant_definitions)
-
-                # check that the variant that has been specified has a YAML file!
-                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
-
-                variant=gcsr.VariantGenome(covid_reference, variant_definitions[options.variant_name])
-                variant_alt=gcsr.VariantGenome(covid_reference, variant_definitions[options.variant_name])
-                expected=gcsr.VariantGenome(covid_reference, variant_definitions[options.variant_name])
-                variant_source = 'phe'
+            raise ValueError('must specify either --variant_definitions or --pango_definitions')
 
 
-            elif options.pango_definitions:
+        description = options.variant_name
+        #+"_"+options.primer_definition.split('.')[0]+"_readlength_"+str(options.read_length)+"_depth_"+str(options.depth)
 
-                variant_definitions=gcsr.load_pango_definitions(options.pango_definitions)
-
-                # check that the variant that has been specified has a YAML file!
-                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
-
-                variant=gcsr.PangoGenome(covid_reference, variant_definitions[options.variant_name], options.variant_name)
-                variant_alt=gcsr.PangoGenome(covid_reference, variant_definitions[options.variant_name], options.variant_name)
-                expected=gcsr.PangoGenome(covid_reference, variant_definitions[options.variant_name], options.variant_name)
-
-                variant_source = 'cov'
-
-            else:
-                raise ValueError('must specify either --variant_definitions or --pango_definitions')
-
-
-            description = options.variant_name
-            #+"_"+options.primer_definition.split('.')[0]+"_readlength_"+str(options.read_length)+"_depth_"+str(options.depth)
-
-            index_lookup=variant.index_lookup
+        index_lookup=variant.index_lookup
 
         # drop any amplicons specified
         if options.drop_amplicons is not None:
@@ -139,7 +124,7 @@ if __name__ == "__main__":
 
                 mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index < int(row['end_amplicon']))
 
-                expected.variant.nucleotide_sequence[mask] = 'n'
+                variant.expected.nucleotide_sequence[mask] = 'n'
 
         if options.drop_forward_amplicons is not None:
 
@@ -149,7 +134,7 @@ if __name__ == "__main__":
 
                 mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index < int(row['end_amplicon']))
 
-                expected.variant.nucleotide_sequence[mask] = 'n'
+                variant.expected.nucleotide_sequence[mask] = 'n'
 
         if options.bias_amplicons is not None:
 
@@ -160,13 +145,12 @@ if __name__ == "__main__":
                 idx = numpy.random.choice(numpy.arange(int(row['start_amplicon']),int(row['end_amplicon'])))
                 mask = covid_reference.nucleotide_index == idx
                 ref_base = covid_reference.nucleotide_sequence[mask]
-                bases = {'a','t','c','g'}
                 new_bases = bases ^ set(ref_base)
                 new_base = random.choice(list(new_bases))
 
-                variant.variant.nucleotide_sequence[mask] = new_base
-                variant_alt.variant.nucleotide_sequence[mask] = ref_base
-                expected.variant.nucleotide_sequence[mask] = 'n'
+                variant.input1.nucleotide_sequence[mask] = new_base
+                variant.input2.nucleotide_sequence[mask] = ref_base
+                variant.expected.nucleotide_sequence[mask] = 'n'
 
         if options.bias_primers is not None:
 
@@ -177,59 +161,57 @@ if __name__ == "__main__":
                 idx = numpy.random.choice(numpy.arange(int(row['start_left']),int(row['end_left'])))
                 mask = covid_reference.nucleotide_index == idx
                 ref_base = covid_reference.nucleotide_sequence[mask]
-                bases = {'a','t','c','g'}
                 new_bases = bases ^ set(ref_base)
                 new_base = random.choice(list(new_bases))
-                variant.variant.nucleotide_sequence[mask] = new_base
-                variant_alt.variant.nucleotide_sequence[mask] = ref_base
-                expected.variant.nucleotide_sequence[mask] = 'n'
+                variant.input1.nucleotide_sequence[mask] = new_base
+                variant.input2.nucleotide_sequence[mask] = ref_base
+                variant.expected.nucleotide_sequence[mask] = 'n'
 
                 idx = numpy.random.choice(numpy.arange(int(row['start_right']),int(row['end_right'])))
                 mask = covid_reference.nucleotide_index == idx
                 ref_base = covid_reference.nucleotide_sequence[mask]
-                bases = {'a','t','c','g'}
                 new_bases = bases ^ set(ref_base)
                 new_base = random.choice(list(new_bases))
-                variant.variant.nucleotide_sequence[mask] = new_base
-                variant_alt.variant.nucleotide_sequence[mask] = ref_base
-                expected.variant.nucleotide_sequence[mask] = 'n'
+                variant.input1.nucleotide_sequence[mask] = new_base
+                variant.input2.nucleotide_sequence[mask] = ref_base
+                variant.expected.nucleotide_sequence[mask] = 'n'
 
         for snps in options.snps:
 
             current_variant = copy.deepcopy(variant)
-            current_variant_alt = copy.deepcopy(variant_alt)
-            current_expected = copy.deepcopy(expected)
 
             if snps > 0:
 
-                snp_indices = numpy.random.choice(current_variant.variant.nucleotide_index,size=snps,replace=False)
+                snp_indices = numpy.random.choice(current_variant.expected.nucleotide_index,size=snps,replace=False)
 
                 for i in snp_indices:
-                    mask = current_variant.variant.nucleotide_index == i
-                    current_base = current_variant.variant.nucleotide_sequence[mask]
+                    mask = current_variant.expected.nucleotide_index == i
+                    current_base = current_variant.expected.nucleotide_sequence[mask]
+
+                    # don't mutate an N
                     if current_base == 'n':
                         continue
-                    bases = {'a','t','c','g'}
+
                     new_bases = bases ^ set(current_base)
                     new_base = random.choice(list(new_bases))
-                    current_variant.variant.nucleotide_sequence[mask] = new_base
-                    current_variant_alt.variant.nucleotide_sequence[mask] = new_base
-                    expected.variant.nucleotide_sequence[mask] = new_base
+                    current_variant.expected.nucleotide_sequence[mask] = new_base
+                    current_variant.input1.nucleotide_sequence[mask] = new_base
+                    current_variant.input2.nucleotide_sequence[mask] = new_base
 
-            variant_genome = current_variant.variant.build_genome_string()
-            variant_alt_genome = current_variant_alt.variant.build_genome_string()
-            expected_genome = expected.variant.build_genome_string()
+            input1_genome = current_variant.input1.build_genome_string()
+            input1_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
+                                                     seq_in=input1_genome.upper())
+            input1_genome = input1_genome.to_Fastq([40] * len(input1_genome))
 
-            # add an extra SNP for amplicon bias
+            input2_genome = current_variant.input2.build_genome_string()
+            input2_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
+                                                     seq_in=input2_genome.upper())
+            input2_genome = input2_genome.to_Fastq([40] * len(input2_genome))
 
-            variant_ref = pyfastaq.sequences.Fasta(id_in=description, seq_in=variant_genome.upper())
-            variant_ref = variant_ref.to_Fastq([40] * len(variant_ref))
-            variant_alt_ref = pyfastaq.sequences.Fasta(id_in=description, seq_in=variant_alt_genome.upper())
-            variant_alt_ref = variant_alt_ref.to_Fastq([40] * len(variant_alt_ref))
-            expected_ref = pyfastaq.sequences.Fasta(id_in=description, seq_in=expected_genome.upper())
-            expected_ref = expected_ref.to_Fastq([40] * len(expected_ref))
-
-            # create a third genome with an N
+            expected_genome = current_variant.expected.build_genome_string()
+            expected_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
+                                                    seq_in=expected_genome.upper())
+            expected_genome = expected_genome.to_Fastq([40] * len(expected_genome))
 
             for depth in options.depth:
 
@@ -244,34 +226,27 @@ if __name__ == "__main__":
                                          variant_source + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
                                          str(error_rate) + 'e-'
                             if options.drop_amplicons is not None:
-                                outputstem += ''.join('A' + str(i) for i in options.drop_amplicons)
+                                outputstem += ''.join('a' + str(i) for i in options.drop_amplicons)
                                 outputstem += 'da-'
                             if options.drop_forward_amplicons is not None:
-                                outputstem += ''.join('A' + str(i) for i in options.drop_forward_amplicons)
+                                outputstem += ''.join('a' + str(i) for i in options.drop_forward_amplicons)
                                 outputstem += 'df-'
                             if options.bias_amplicons is not None:
-                                outputstem += ''.join('A' + str(i) for i in options.bias_amplicons)
+                                outputstem += ''.join('a' + str(i) for i in options.bias_amplicons)
                                 outputstem += 'ba-'
                             if options.bias_primers is not None:
-                                outputstem += ''.join('A' + str(i) for i in options.bias_primers)
+                                outputstem += ''.join('a' + str(i) for i in options.bias_primers)
                                 outputstem += 'bp-'
-                            outputstem += str(repeat)+'rep'
+                            outputstem += str(repeat)
                         else:
                             outputstem = options.output
 
                         if options.write_fasta:
-                            expected.variant.save_fasta(outputstem+".fasta",\
-                                                fixed_length=False,\
-                                                overwrite_existing=True,\
-                                                description=description)
-                            # variant.variant.save_fasta(outputstem+"_variant0.fasta",\
-                            #                     fixed_length=False,\
-                            #                     overwrite_existing=True,\
-                            #                     description=description)
-                            # variant_alt.variant.save_fasta(outputstem+"_variant1.fasta",\
-                            #                     fixed_length=False,\
-                            #                     overwrite_existing=True,\
-                            #                     description=description)
+
+                            current_variant.expected.save_fasta(outputstem+".fasta",\
+                                                        fixed_length=False,\
+                                                        overwrite_existing=True,\
+                                                        description=variant.name)
 
                         if options.tech=='illumina':
 
@@ -303,18 +278,19 @@ if __name__ == "__main__":
 
                                         if options.bias_amplicons is not None or options.bias_primers is not None:
                                             if (amplicon_number in options.bias_amplicons) or (amplicon_number in options.bias_primers):
-                                                read1 = variant_alt_ref.subseq(start, start + length)
-                                                read2 = variant_alt_ref.subseq(end - length, end)
+                                                read1 = input2_genome.subseq(start, start + length)
+                                                read2 = input2_genome.subseq(end - length, end)
                                             else:
-                                                read1 = variant_ref.subseq(start, start + length)
-                                                read2 = variant_ref.subseq(end - length, end)
+                                                read1 = input1_genome.subseq(start, start + length)
+                                                read2 = input1_genome.subseq(end - length, end)
                                         elif options.drop_forward_amplicons is not None:
-                                            read1 = variant_ref.subseq(start, start + length)
-                                            read2 = variant_ref.subseq(end - length, end)
+                                            read1 = input1_genome.subseq(start, start + length)
+                                            read2 = input1_genome.subseq(end - length, end)
                                         else:
-                                            read1 = expected_ref.subseq(start, start + length)
-                                            read2 = expected_ref.subseq(end - length, end)
+                                            read1 = expected_genome.subseq(start, start + length)
+                                            read2 = expected_genome.subseq(end - length, end)
 
+                                        # reverse complement the second read
                                         read2.revcomp()
 
                                         if error_rate > 0:
@@ -324,15 +300,22 @@ if __name__ == "__main__":
                                         read1.id = f"{amplicon_number}.{i} /1"
                                         read2.id = f"{amplicon_number}.{i} /2"
 
-                                        if options.drop_forward_amplicons is not None and amplicon_number not in options.drop_forward_amplicons:
+                                        if options.drop_forward_amplicons is not None:
+                                             if amplicon_number not in options.drop_forward_amplicons:
+                                                 print(read1, file=f1)
+                                        else:
                                             print(read1, file=f1)
                                         print(read2, file=f2)
 
                                         read1.id = f"{amplicon_number}.{i}.2 /2"
                                         read2.id = f"{amplicon_number}.{i}.2 /1"
                                         print(read1, file=f2)
-                                        if options.drop_forward_amplicons is not None and amplicon_number not in options.drop_forward_amplicons:
-                                            print(read2, file=f1)
+                                        if options.drop_forward_amplicons is not None:
+                                            if amplicon_number not in options.drop_forward_amplicons:
+                                                print(read2, file=f1)
+                                        else:
+                                                print(read2, file=f1)
+
 
                         elif options.tech == 'nanopore':
 
@@ -360,11 +343,11 @@ if __name__ == "__main__":
 
                                         if options.bias_amplicons is not None or options.bias_primers is not None:
                                             if (amplicon_number in options.bias_amplicons) or (amplicon_number in options.bias_primers):
-                                                read1 = variant_alt_ref.subseq(start, start + length)
+                                                read1 = input2_genome.subseq(start, start + length)
                                             else:
-                                                read1 = variant_ref.subseq(start, start + length)
+                                                read1 = input1_genome.subseq(start, start + length)
                                         else:
-                                            read1 = expected_ref.subseq(start, start + length)
+                                            read1 = expected_genome.subseq(start, start + length)
 
                                         if error_rate > 0:
                                             read1.seq = gcsr.mutate_read(read1.seq, error_rate=error_rate)
@@ -381,13 +364,13 @@ if __name__ == "__main__":
 
                                         if options.bias_amplicons is not None or options.bias_primers is not None:
                                             if (amplicon_number in options.bias_amplicons) or (amplicon_number in options.bias_primers):
-                                                read2 = variant_alt_ref.subseq(end - length, end)
+                                                read2 = input2_genome.subseq(end - length, end)
                                             else:
-                                                read2 = variant_ref.subseq(end - length, end)
+                                                read2 = input1_genome.subseq(end - length, end)
                                         elif options.drop_forward_amplicons is not None:
-                                            read2 = variant_ref.subseq(end - length, end)
+                                            read2 = input1_genome.subseq(end - length, end)
                                         else:
-                                            read2 = expected_ref.subseq(end - length, end)
+                                            read2 = expected_genome.subseq(end - length, end)
 
                                         read2.revcomp()
 
