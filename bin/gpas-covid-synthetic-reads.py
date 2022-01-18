@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
                 row = amplicons[amplicons.number == chosen_amplicon]
 
-                mask = (covid_reference.nucleotide_index >= int(row['start_left'])) & (covid_reference.nucleotide_index < int(row['end_right']))
+                mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index < int(row['end_amplicon']))
 
                 variant.expected.nucleotide_sequence[mask] = 'n'
 

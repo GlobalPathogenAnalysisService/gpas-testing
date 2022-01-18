@@ -18,7 +18,7 @@ def define_amplicon(tmp, amplicons, reference_genome):
         if row['name'] == chosen_amplicon:
             continue
 
-        current_amplicon_mask = (reference_genome.nucleotide_index >= int(row['start'])) & (reference_genome.nucleotide_index < int(row['end']))
+        current_amplicon_mask = (reference_genome.nucleotide_index >= int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
 
         overlap_region = current_amplicon_mask & mask
 
