@@ -8,7 +8,7 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_id", required=True, help="the batch uuid that identifies the folder on sp3:/work/output where the results are stored")
+    parser.add_argument("--batch", required=True, help="the batch uuid that identifies the folder on sp3:/work/output where the results are stored")
     parser.add_argument("--outfile", default='results.csv.gz', help="the name of the output CSV file")
     options = parser.parse_args()
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     def compare_genomes(row):
 
         in_genome = read_fasta(row['filestem'] + '.fasta')
-        out_genome = read_fasta(batch_id + '/consensus_seqs/' + row['out_fasta'] + '.fasta')
+        out_genome = read_fasta(options.batch + '/consensus_seqs/' + row['out_fasta'] + '.fasta')
 
         # only mark as correctly assembled if the length of the output string is >29000 and it is found in the input string
         match = out_genome in in_genome
