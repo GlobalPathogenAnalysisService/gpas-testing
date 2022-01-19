@@ -7,6 +7,7 @@ class VariantGenome(object):
     def __init__(self, reference_genome, variant_definition, name):
 
         self.name = name
+        assert self.name in variant_definition.keys(), 'specified lineage not found in definitions! '
         if self.name != 'reference':
             self.definition=variant_definition[self.name]
         self.reference=reference_genome

@@ -27,7 +27,6 @@ def test_mutate_read():
 def test_gamma():
 
     # Chose Gamma because it has one insertion and one deletion
-
     variant_definitions=gcsr.load_variant_definitions('variant_definitions')
 
     gamma=gcsr.VariantGenome(covid_reference, variant_definitions, 'gamma')
