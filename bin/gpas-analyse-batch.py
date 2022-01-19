@@ -9,6 +9,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch", required=True, help="the batch uuid that identifies the folder on sp3:/work/output where the results are stored")
+    parser.add_argument("--tech", required=True, help="either illumina or nanopore")
     parser.add_argument("--outfile", default='results.csv.gz', help="the name of the output CSV file")
     options = parser.parse_args()
 
@@ -67,6 +68,31 @@ if __name__ == "__main__":
 
     sample_names[['assembled_correct', 'len_in', 'len_out', 'in_genome', 'out_genome']]=sample_names.apply(compare_genomes,axis=1)
 
-    sample_names.to_csv(options.outfile, index=False)
+
 
     print("Assembled correctly:\n", sample_names.assembled_correct.value_counts())
+
+    def read_pango(row):
+
+        pangofile = options.batch + '/analysis/pango/' + options.tech + '/' + row['out_fasta'] + '_lineage_report.csv'
+
+        if os.path.exists(pangofile):
+            df = pandas.read_csv(pangofile)
+            return pandas.Series([df['lineage'].values[0], df['conflict'].values[0], df['ambiguity_score'].values[0],
+                                  df['scorpio_call'].values[0], df['scorpio_support'].values[0],
+                                  df['scorpio_conflict'].values[0]])
+        else:
+
+            return pandas.Series([None, None, None, None, None, None])
+
+    sample_names[['pango_lineage', 'pango_conflict', 'pango_ambiguity_score', 'scorpio_call', 'scorpio_support', 'scorpio_conflict']] = sample_names.apply(read_pango, axis=1)
+
+    sample_names = sample_names[['in_fasta', 'out_fasta', 'filestem', 'tech', 'primer_scheme', 'lineage',
+                                'lineage_definition', 'snps', 'depth', 'error', 'dropped_amplicons',
+                                'repeat', 'assembled_correct', 'len_in', 'len_out',
+                                'pango_lineage', 'pango_conflict',
+                                'pango_ambiguity_score', 'scorpio_call', 'scorpio_support',
+                                'scorpio_conflict', 'in_genome', 'out_genome']]
+    
+    sample_names.to_csv(options.outfile, index=False)
+            
