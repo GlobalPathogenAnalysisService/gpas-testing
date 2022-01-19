@@ -14,7 +14,8 @@ setup(
     author_email='philip.fowler@ndm.ox.ac.uk',
     url='https://github.com/GenomePathogenAnalysisService/gpas-covid-synthetic-reads',
     scripts=['bin/gpas-covid-synthetic-reads.py',
-             'bin/gpas-make-csv.py'],
+             'bin/gpas-make-csv.py',
+             'bin/gpas-analyse-batch.py'],
     install_requires=[
         'numpy >= 1.21.2',
         'pyfastaq >= 3.17.0',
