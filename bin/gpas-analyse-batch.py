@@ -67,6 +67,6 @@ if __name__ == "__main__":
 
     sample_names[['assembled_correct', 'len_in', 'len_out', 'in_genome', 'out_genome']]=sample_names.apply(compare_genomes,axis=1)
 
-    sample_names.to_csv(outfile, index=False)
+    sample_names.to_csv(options.outfile, index=False)
 
     print("Assembled correctly:\n", sample_names.assembled_correct.value_counts())
