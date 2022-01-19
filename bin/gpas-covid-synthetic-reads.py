@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--output",required=False,help="the stem of the output file")
     parser.add_argument("--variant_name",default='Reference',help="the name of the variant, default is Reference")
     parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
-    parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
+    parser.add_argument("--tech",required=True,help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--primers",nargs='+',default=['articv3'],help="the name of the primer schema, must be on of articv3, articv4, midnight1200")
     parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
@@ -36,6 +36,8 @@ if __name__ == "__main__":
     error_rates=numpy.array(options.error_rate)/100.
 
     bases = {'a','t','c','g'}
+
+    assert options.tech in ['illumina', 'nanopore']
 
     assert not (options.variant_definitions and options.pango_definitions), 'cannot specify both variant_definitions and pango_definitions'
 
