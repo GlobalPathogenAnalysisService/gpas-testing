@@ -20,7 +20,7 @@ if __name__ == "__main__":
             tags.append(line.rstrip())
 
     assert options.number_of_tags > 0
-    assert options.number_of_tags <=l en(tags)
+    assert options.number_of_tags <= len(tags)
 
     if options.tech == 'illumina':
         header='name,fastq1,fastq2,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
