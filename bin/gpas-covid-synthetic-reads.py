@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("--variant_name",default='Reference',help="the name of the variant, default is Reference")
     parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
     parser.add_argument("--tech",required=True,help="whether to generate illumina (paired) or nanopore (unpaired) reads")
-    parser.add_argument("--primers",nargs='+',default=['articv3'],help="the name of the primer schema, must be on of articv3, articv4, midnight1200")
+    parser.add_argument("--primers",nargs='+',default=['articv3'],help="the name of the primer schema, must be on of articv3, articv4, midnight1200, ampliseq")
     parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
     parser.add_argument("--depth",nargs='+',default=[500],type=int,help="the depth (default value is 500)")
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         assert len(options.primers)==1, 'can only specify dropped amplicons for a single primer scheme!'
 
     for primer_name in options.primers:
-        assert primer_name in ['articv3','articv4','midnight1200']
+        assert primer_name in ['articv3','articv4','midnight1200', 'ampliseq']
 
         if primer_name=='articv3':
             amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v3.amplicons.csv')
@@ -53,6 +53,8 @@ if __name__ == "__main__":
             amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-artic-v4.amplicons.csv')
         elif primer_name=='midnight1200':
             amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-midnight-1200.amplicons.csv')
+        elif primer_name=='ampliseq':
+            amplicon_file = pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/covid-ampliseq-v1.amplicons.csv')
 
         # load the definitions of the amplicons
         amplicons = pandas.read_csv(amplicon_file,\
@@ -124,7 +126,7 @@ if __name__ == "__main__":
 
                 row = amplicons[amplicons.number == chosen_amplicon]
 
-                mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index < int(row['end_amplicon']))
+                mask = (covid_reference.nucleotide_index >= int(row['start_amplicon'])) & (covid_reference.nucleotide_index <= int(row['end_amplicon']))
 
                 variant.expected.nucleotide_sequence[mask] = 'n'
 
@@ -134,7 +136,7 @@ if __name__ == "__main__":
 
                 row = amplicons[amplicons.number == chosen_amplicon]
 
-                mask = (covid_reference.nucleotide_index >= int(row['start_left'])) & (covid_reference.nucleotide_index < int(row['end_right']))
+                mask = (covid_reference.nucleotide_index > int(row['start_left'])) & (covid_reference.nucleotide_index < int(row['end_right']))
 
                 variant.expected.nucleotide_sequence[mask] = 'n'
 
