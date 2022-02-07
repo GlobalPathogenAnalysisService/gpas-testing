@@ -11,14 +11,16 @@ def define_amplicon(tmp, amplicons, reference_genome):
 
     chosen_amplicon = tmp['name']
     row = amplicons[amplicons.name == chosen_amplicon]
-    mask = (reference_genome.nucleotide_index >= int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
+    # PWF: this used to be >= but end_left is the index of the last base in the left primer
+    mask = (reference_genome.nucleotide_index > int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
 
     for idx, row in amplicons.iterrows():
 
         if row['name'] == chosen_amplicon:
             continue
 
-        current_amplicon_mask = (reference_genome.nucleotide_index >= int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
+        # PWF: this used to be >= but end_left is the index of the last base in the left primer
+        current_amplicon_mask = (reference_genome.nucleotide_index > int(row['end_left'])) & (reference_genome.nucleotide_index < int(row['start_right']))
 
         overlap_region = current_amplicon_mask & mask
 
