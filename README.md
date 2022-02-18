@@ -3,7 +3,7 @@ Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing
 
 ## Installation
 
-You first need to install [`gumpy`](https://github.com/oxfordmmm/gumpy) as
+You first need to install [`gumpy`](https://github.com/oxfordmmm/gumpy) as the code uses gumpy to build the genome of each sample.
 
 Once complete, 
 
