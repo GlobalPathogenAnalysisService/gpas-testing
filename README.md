@@ -131,5 +131,15 @@ These pairs of `fastq` files (after being compressed using `gzip`) can be used f
 * automated end-to-end testing of bioinformatics workflows, such as GPAS, since you can knows what the expected consensus sequence (the `fasta` file) should be.
 * preliminary testing of new variants 
 
+## Docker Use
+
+There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas-covid-synthetic-reads). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
+
+The container can be run with a command such as:
+
+```
+docker run -v /path/to/output:/output oxfordmmm/gpas-covid-synthetic-reads python3 /gpas-covid-synthetic-reads/bin/gpas-covid-synthetic-reads.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
+```
+
 Philip W Fowler, 18 Feb 2022
 
