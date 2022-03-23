@@ -64,7 +64,6 @@ class PangoGenome(object):
                     alt = cols[1][pos+1:].lower()
 
                     mask = self.expected.nucleotide_index == idx
-
                     
                     self.expected.is_indel[mask] = True
                     self.expected.indel_length[mask] = 1 * len(alt)
