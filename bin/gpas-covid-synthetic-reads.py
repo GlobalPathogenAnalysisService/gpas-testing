@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
     parser.add_argument("--depth",nargs='+',default=[500],type=int,help="the depth (default value is 500)")
+    parser.add_argument("--depth_stddev",default=0,type=int,help="the standard deviation of the depth distribution (default value is 0)")
     parser.add_argument("--snps",nargs='+',default=[0],type=int,help="the number of snps to randomly introduce into the sequence")
     parser.add_argument("--repeats",default=1,type=int,help="how many repeats to create")
     parser.add_argument("--error_rate",nargs='+',default=[0.0],type=float,help="the percentage base error rate (default value is 0.0)")
@@ -273,7 +274,12 @@ if __name__ == "__main__":
                                     start = numpy.where(index_lookup == row["start"])[0][0]
                                     end = numpy.where(index_lookup == row["end"])[0][0]
 
-                                    for i in range(0, int(depth / 2)):
+                                    if options.depth_stddev == 0:
+                                        actual_depth = depth
+                                    else:
+                                        actual_depth = int(numpy.random.normal(depth, options.depth_stddev))
+
+                                    for i in range(0, int(actual_depth / 2)):
 
                                         if options.read_length is None:
                                             length = end - start
@@ -335,7 +341,12 @@ if __name__ == "__main__":
                                     start = numpy.where(index_lookup == row["start"])[0][0]
                                     end = numpy.where(index_lookup == row["end"])[0][0]
 
-                                    for i in range(0, int(depth / 2)):
+                                    if options.depth_stddev == 0:
+                                        actual_depth = depth
+                                    else:
+                                        actual_depth = int(numpy.random.normal(depth, options.depth_stddev))
+
+                                    for i in range(0, int(actual_depth / 2)):
 
                                         if options.drop_forward_amplicons is not None and amplicon_number in options.drop_forward_amplicons:
                                             continue
@@ -359,7 +370,7 @@ if __name__ == "__main__":
                                         read1.id = f"{amplicon_number}.{i} forward"
                                         print(read1, file=f1)
 
-                                    for i in range(0, int(depth / 2)):
+                                    for i in range(0, int(actual_depth / 2)):
 
                                         if options.read_length is None:
                                             length = end - start

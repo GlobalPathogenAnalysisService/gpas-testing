@@ -7,7 +7,7 @@ import gpas_covid_synthetic_reads as gcsr
 
 covid_reference = gumpy.Genome('MN908947.3.gbk')
 
-for primer_name in ['covid-artic-v3', 'covid-artic-v4', 'covid-midnight-1200']:
+for primer_name in ['covid-artic-v3', 'covid-artic-v4', 'covid-midnight-1200', 'covid-ampliseq-v1']:
 
     primer_scheme_file = primer_name + '.vwf.tsv'
 

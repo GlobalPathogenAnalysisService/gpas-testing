@@ -114,13 +114,19 @@ def load_pango_definitions(path):
 
         who_label = lineages_reference[lineages_reference['pango_lineage']==i]['who_label'].values[0].lower()
 
-        if who_label == 'Epsilon' and i == 'cB.1.427':
+        if who_label == 'epsilon' and i == 'cB.1.427':
             continue
-        elif who_label == 'Omicron' and i != 'cB.1.1.529':
-            continue
+        elif who_label == 'omicron':
+            if i == 'cB.1.1.529':
+                who_label = 'omicronB.1.1.529'
+            elif i == 'cBA.1':
+                who_label = 'omicronBA.1'
+            elif i == 'cBA.2':
+                who_label = 'omicronBA.2'
+            else:
+                continue
 
         with open(constellations_path / (i + '.json') ) as INPUT:
-
             pango_definitions[who_label]=json.load(INPUT)
 
     return pango_definitions
