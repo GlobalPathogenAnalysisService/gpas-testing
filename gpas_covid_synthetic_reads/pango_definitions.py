@@ -35,9 +35,9 @@ class PangoGenome(object):
                                  'E': 'E',
                                  'n': 'N',
                                  'N': 'N',
-                                 'orf1ab': 'ORF1ab',
-                                 '1ab': 'ORF1ab',
-                                 'ORF1ab' : 'ORF1ab',
+                                 'orf1ab': 'orf1ab',
+                                 '1ab': 'orf1ab',
+                                 'ORF1ab' : 'orf1ab',
                                  'ORF3a': 'ORF3a',
                                  'orf3a': 'ORF3a',
                                  'ORF7a': 'ORF7a',
@@ -60,11 +60,12 @@ class PangoGenome(object):
 
                     ref = cols[1][0]
                     pos = cols[1].find('+')
-                    idx = int(cols[1][1:pos])
+                    idx = int(cols[1][0:pos])
                     alt = cols[1][pos+1:].lower()
 
                     mask = self.expected.nucleotide_index == idx
 
+                    
                     self.expected.is_indel[mask] = True
                     self.expected.indel_length[mask] = 1 * len(alt)
                     self.expected.indel_nucleotides[mask] = alt
@@ -94,8 +95,16 @@ class PangoGenome(object):
 
                 mask=self.expected.nucleotide_index == idx
 
+
+                mask2 = numpy.isin(self.expected.nucleotide_index, [i for i in range(idx, idx + number_bases_deleted)])
+
+                deleted_nucs = self.expected.nucleotide_sequence[mask2]
+
+                bases_deleted = ''.join(i for i in deleted_nucs)
+
                 self.expected.is_indel[mask] = True
-                self.expected.indel_nucleotides[mask] = -1 * number_bases_deleted
+                self.expected.indel_nucleotides[mask] = bases_deleted
+                self.expected.indel_length[mask] = -1 * number_bases_deleted
 
             elif cols[0] in constellation_to_gumpy_lookup.keys() and constellation_to_gumpy_lookup[cols[0]] in self.expected.genes.keys():
 
@@ -131,7 +140,7 @@ class PangoGenome(object):
                     mask=numpy.isin(self.expected.nucleotide_index,idx)
 
                     self.expected.is_indel[mask] = True
-                    self.expected.indel_nucleotides[mask] = -1 * (3 * number_of_amino_acids)
+                    self.expected.indel_length[mask] = -1 * (3 * number_of_amino_acids)
 
                 else:
 
