@@ -35,7 +35,6 @@ if __name__ == "__main__":
             header='name,fastq,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
             file_list = glob.glob('*.fastq.gz')
             file_extensions = ['.fastq.gz']
-            file_extensions = ['_1.fastq.gz','_2.fastq.gz']
     elif options.file_type == 'bam':
         header='name,bam,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
         file_list = glob.glob('*.bam')
