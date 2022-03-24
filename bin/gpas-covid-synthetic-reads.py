@@ -105,9 +105,25 @@ if __name__ == "__main__":
             if options.variant_name != 'reference':
                 assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
 
-            variant = gcsr.PangoGenome(covid_reference,
-                                       variant_definitions,
-                                       options.variant_name)
+            # check that this isn't a variant which is layered on top of a parent
+            if 'parent_lineage' in variant_definitions[options.variant_name]['variant']:
+
+                parent = 'c' + variant_definitions[options.variant_name]['variant']['parent_lineage']
+
+                print("Building {} from {}".format(options.variant_name, parent))
+
+                prevariant = gcsr.PangoGenome(covid_reference,
+                                           variant_definitions,
+                                           parent)
+
+                variant = gcsr.PangoGenome(prevariant.expected,
+                                           variant_definitions,
+                                           options.variant_name)
+            else:
+
+                variant = gcsr.PangoGenome(covid_reference,
+                                           variant_definitions,
+                                           options.variant_name)
 
             variant_source = 'cov'
 
@@ -203,17 +219,17 @@ if __name__ == "__main__":
                     current_variant.input1.nucleotide_sequence[mask] = new_base
                     current_variant.input2.nucleotide_sequence[mask] = new_base
 
-            input1_genome = current_variant.input1.build_genome_string()
+            input1_genome = current_variant.input1.build_genome_string(fixed_length=True)
             input1_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                      seq_in=input1_genome.upper())
             input1_genome = input1_genome.to_Fastq([40] * len(input1_genome))
 
-            input2_genome = current_variant.input2.build_genome_string()
+            input2_genome = current_variant.input2.build_genome_string(fixed_length=True)
             input2_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                      seq_in=input2_genome.upper())
             input2_genome = input2_genome.to_Fastq([40] * len(input2_genome))
 
-            expected_genome = current_variant.expected.build_genome_string()
+            expected_genome = current_variant.expected.build_genome_string(fixed_length=True)
             expected_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                     seq_in=expected_genome.upper())
             expected_genome = expected_genome.to_Fastq([40] * len(expected_genome))

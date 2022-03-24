@@ -64,7 +64,7 @@ class PangoGenome(object):
                     alt = cols[1][pos+1:].lower()
 
                     mask = self.expected.nucleotide_index == idx
-                    
+
                     self.expected.is_indel[mask] = True
                     self.expected.indel_length[mask] = 1 * len(alt)
                     self.expected.indel_nucleotides[mask] = alt
@@ -94,9 +94,7 @@ class PangoGenome(object):
 
                 mask=self.expected.nucleotide_index == idx
 
-
                 mask2 = numpy.isin(self.expected.nucleotide_index, [i for i in range(idx, idx + number_bases_deleted)])
-
                 deleted_nucs = self.expected.nucleotide_sequence[mask2]
 
                 bases_deleted = ''.join(i for i in deleted_nucs)

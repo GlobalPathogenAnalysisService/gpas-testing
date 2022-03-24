@@ -111,7 +111,6 @@ def load_pango_definitions(path):
     constellations_path = pathlib.Path(path) / "constellations/definitions"
 
     for i in lineages_reference['pango_lineage']:
-
         who_label = lineages_reference[lineages_reference['pango_lineage']==i]['who_label'].values[0].lower()
 
         if who_label == 'epsilon' and i == 'cB.1.427':
@@ -127,7 +126,7 @@ def load_pango_definitions(path):
                 continue
 
         with open(constellations_path / (i + '.json') ) as INPUT:
-            pango_definitions[who_label]=json.load(INPUT)
+            pango_definitions[i]=json.load(INPUT)
 
     return pango_definitions
 
