@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
             # check that the variant that has been specified has a JSON file!
             if options.variant_name != 'reference':
-                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_definitions
+                assert options.variant_name in variant_definitions.keys(), "specified variant not defined here "+options.variant_name
 
             # check that this isn't a variant which is layered on top of a parent
             if 'parent_lineage' in variant_definitions[options.variant_name]['variant']:
