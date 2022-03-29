@@ -12,6 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/tags.txt'),help="a plaintext file with one row per tag")
     parser.add_argument("--uuid_length",default='long',help="whether to use a long or short UUID4")
     parser.add_argument("--number_of_tags",default=2,type=int,help="how many tags to give each sample. Can be zero, or up to the number of rows in <tag_file>. Default is 2 so as to test the delimiter")
+    parser.add_argument("--input_dir",default="",type=str,help="path to the directory of the samples")
     options = parser.parse_args()
 
     assert options.tech in ['illumina','nanopore']
@@ -29,15 +30,24 @@ if __name__ == "__main__":
     if options.file_type == 'fastq':
         if options.tech == 'illumina':
             header='name,fastq1,fastq2,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
-            file_list = glob.glob('*_1.fastq.gz')
+            if options.input_dir != "":
+                file_list = glob.glob(f'{options.input_dir}/*_1.fastq.gz')
+            else:
+                file_list = glob.glob('*_1.fastq.gz')
             file_extensions = ['_1.fastq.gz','_2.fastq.gz']
         elif options.tech == 'nanopore':
             header='name,fastq,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
-            file_list = glob.glob('*.fastq.gz')
+            if options.input_dir != "":
+                file_list = glob.glob(f'{options.input_dir}/*.fastq.gz')
+            else:
+                file_list = glob.glob('*.fastq.gz')
             file_extensions = ['.fastq.gz']
     elif options.file_type == 'bam':
         header='name,bam,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
-        file_list = glob.glob('*.bam')
+        if options.input_dir != "":
+            file_list = glob.glob(f'{options.input_dir}/*.bam')
+        else:
+            file_list = glob.glob('*.bam')
         file_extensions = ['.bam']
 
     print(header)
