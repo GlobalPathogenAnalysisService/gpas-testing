@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import copy, glob, argparse, random, pkg_resources
+import copy, glob, argparse, random, pkg_resources, pathlib
 
 import numpy, yaml, pyfastaq, pandas
 import gumpy
@@ -242,7 +242,8 @@ if __name__ == "__main__":
 
                     for repeat in range(options.repeats):
 
-                        if options.output is None:
+                        # build an automatic output string if no output is specified or it is a pure directory
+                        if options.output is None or pathlib(options.output).is_dir():
                             outputstem = options.tech + '-' + primer_name.lower() + '-' + options.variant_name + '-' +\
                                          variant_source + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
                                          str(error_rate) + 'e-'
