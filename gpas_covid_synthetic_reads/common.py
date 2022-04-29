@@ -122,6 +122,8 @@ def load_pango_definitions(path):
                 who_label = 'omicronBA.1'
             elif i == 'cBA.2':
                 who_label = 'omicronBA.2'
+            elif i == 'cBA.3':
+                who_label = 'omicronBA.3'
             else:
                 continue
 

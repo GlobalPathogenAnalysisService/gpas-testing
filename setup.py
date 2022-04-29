@@ -17,9 +17,9 @@ setup(
              'bin/gpas-make-csv.py',
              'bin/gpas-analyse-batch.py'],
     install_requires=[
-        'numpy >= 1.21.2',
         'pyfastaq >= 3.17.0',
         'pyyaml',
+        'numpy',
         'tqdm'
         ],
     python_requires='>=3.8',

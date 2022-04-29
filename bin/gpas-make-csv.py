@@ -32,7 +32,7 @@ if __name__ == "__main__":
             if options.old_format:
                 header = 'name,fastq1,fastq2,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
             else:
-                header = 'batch,run_number,sample_name,bam,control,collection_date,tags,country,region,district,specimen_organism,host,instrument_platform,primer_scheme'
+                header = 'batch,run_number,sample_name,fastq1,fastq2,control,collection_date,tags,country,region,district,specimen_organism,host,instrument_platform,primer_scheme'
             file_list = glob.glob('*_1.fastq.gz')
             file_extensions = ['_1.fastq.gz','_2.fastq.gz']
         elif options.tech == 'nanopore':
