@@ -118,7 +118,8 @@ if __name__ == "__main__":
 
                 variant = gcsr.PangoGenome(prevariant.expected,
                                            variant_definitions,
-                                           options.variant_name)
+                                           options.variant_name,
+                                           indels=prevariant.indels)
             else:
 
                 variant = gcsr.PangoGenome(covid_reference,
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         description = options.variant_name
         #+"_"+options.primer_definition.split('.')[0]+"_readlength_"+str(options.read_length)+"_depth_"+str(options.depth)
 
-        index_lookup=variant.index_lookup
+        # index_lookup=variant.index_lookup
 
         # drop any amplicons specified
         if options.drop_amplicons is not None:
@@ -197,6 +198,21 @@ if __name__ == "__main__":
                 variant.input2.nucleotide_sequence[mask] = ref_base
                 variant.expected.nucleotide_sequence[mask] = 'n'
 
+        def tweak_amplicons(row, idx, indel_length, start, end):
+            # check if indel lies in the region being considered
+            if idx >= row[start] and idx < row[end]:
+                return pandas.Series([row[start], row[end] + indel_length])
+            elif row[start] > idx:
+                return pandas.Series([row[start] + indel_length, row[end] + indel_length])
+            else:
+                return pandas.Series([row[start], row[end]])
+
+        for (idx,indel_length) in variant.indels:
+            amplicons[['start','end']] = amplicons.apply(tweak_amplicons, args=(idx,indel_length,'start','end'), axis=1)
+            amplicons[['start_left','end_left']] = amplicons.apply(tweak_amplicons, args=(idx,indel_length,'start_left','end_left'), axis=1)
+            amplicons[['start_right','end_right']] = amplicons.apply(tweak_amplicons, args=(idx,indel_length,'start_right','end_right'), axis=1)
+            amplicons[['start_amplicon','end_amplicon']] = amplicons.apply(tweak_amplicons, args=(idx,indel_length,'start_amplicon','end_amplicon'), axis=1)
+
         for snps in options.snps:
 
             current_variant = copy.deepcopy(variant)
@@ -219,17 +235,17 @@ if __name__ == "__main__":
                     current_variant.input1.nucleotide_sequence[mask] = new_base
                     current_variant.input2.nucleotide_sequence[mask] = new_base
 
-            input1_genome = current_variant.input1.build_genome_string(fixed_length=True)
+            input1_genome = current_variant.input1.build_genome_string(fixed_length=False)
             input1_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                      seq_in=input1_genome.upper())
             input1_genome = input1_genome.to_Fastq([40] * len(input1_genome))
 
-            input2_genome = current_variant.input2.build_genome_string(fixed_length=True)
+            input2_genome = current_variant.input2.build_genome_string(fixed_length=False)
             input2_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                      seq_in=input2_genome.upper())
             input2_genome = input2_genome.to_Fastq([40] * len(input2_genome))
 
-            expected_genome = current_variant.expected.build_genome_string(fixed_length=True)
+            expected_genome = current_variant.expected.build_genome_string(fixed_length=False)
             expected_genome = pyfastaq.sequences.Fasta(id_in=current_variant.name,
                                                     seq_in=expected_genome.upper())
             expected_genome = expected_genome.to_Fastq([40] * len(expected_genome))
@@ -288,8 +304,11 @@ if __name__ == "__main__":
                                     if options.read_length is not None:
                                         assert options.read_length < row["end"] - row["start"] + 1 < 2 * options.read_length
 
-                                    start = numpy.where(index_lookup == row["start"])[0][0]
-                                    end = numpy.where(index_lookup == row["end"])[0][0]
+                                    # PWF variable
+                                    # start = numpy.where(index_lookup == row["start"])[0][0]
+                                    # end = numpy.where(index_lookup == row["end"])[0][0]
+                                    start = row["start"]-1
+                                    end = row["end"]-1
 
                                     if options.depth_stddev == 0:
                                         actual_depth = depth
@@ -355,8 +374,11 @@ if __name__ == "__main__":
                                     if options.drop_amplicons is not None and amplicon_number in options.drop_amplicons:
                                         continue
 
-                                    start = numpy.where(index_lookup == row["start"])[0][0]
-                                    end = numpy.where(index_lookup == row["end"])[0][0]
+                                    # PWF variable
+                                    # start = numpy.where(index_lookup == row["start"])[0][0]
+                                    # end = numpy.where(index_lookup == row["end"])[0][0]
+                                    start = row["start"]-1
+                                    end = row["end"]-1
 
                                     if options.depth_stddev == 0:
                                         actual_depth = depth

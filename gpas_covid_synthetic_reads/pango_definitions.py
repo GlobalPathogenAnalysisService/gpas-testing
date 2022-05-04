@@ -5,7 +5,7 @@ import gpas_covid_synthetic_reads as gcsr
 
 class PangoGenome(object):
 
-    def __init__(self, reference_genome, pango_definition, name):
+    def __init__(self, reference_genome, pango_definition, name, indels=None):
 
         self.name = name
         if self.name!='reference':
@@ -13,6 +13,10 @@ class PangoGenome(object):
         self.reference = reference_genome
         self.expected = copy.deepcopy(reference_genome)
         self.index_lookup=copy.deepcopy(reference_genome.nucleotide_index)
+        if indels is None:
+            self.indels = []
+        else:
+            self.indels = indels
 
         self.amino_acid_to_codon = gcsr.create_amino_acid_to_codon(self.expected)
 
@@ -68,6 +72,7 @@ class PangoGenome(object):
                     self.expected.is_indel[mask] = True
                     self.expected.indel_length[mask] = 1 * len(alt)
                     self.expected.indel_nucleotides[mask] = alt
+                    self.indels.append((idx, 1*len(alt)))
 
                 else:
 
@@ -102,6 +107,7 @@ class PangoGenome(object):
                 self.expected.is_indel[mask] = True
                 self.expected.indel_nucleotides[mask] = bases_deleted
                 self.expected.indel_length[mask] = -1 * number_bases_deleted
+                self.indels.append((idx, -1 * number_bases_deleted))
 
             elif cols[0] in constellation_to_gumpy_lookup.keys() and constellation_to_gumpy_lookup[cols[0]] in self.expected.genes.keys():
 
@@ -130,14 +136,14 @@ class PangoGenome(object):
 
                         assert gene.amino_acid_sequence[mask] == ref
 
-                    # find out the genome nucleotide indices corresponding to this codon
-                    idx=gene.nucleotide_index[gene.gene_position==aa_num]
+                    # find out the genome nucleotide indices corresponding to the start of this codon
+                    idx=gene.nucleotide_index[gene.gene_position==aa_num][0]
 
                     # create a genome mask
                     mask=numpy.isin(self.expected.nucleotide_index,idx)
-
                     self.expected.is_indel[mask] = True
                     self.expected.indel_length[mask] = -1 * (3 * number_of_amino_acids)
+                    self.indels.append((idx, -1 * (3 * number_of_amino_acids)))
 
                 else:
 
