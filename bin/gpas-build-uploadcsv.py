@@ -1,5 +1,9 @@
-import glob, uuid, os, argparse, random, pkg_resources
-
+import glob
+import uuid
+import os
+import argparse
+import random
+import pkg_resources
 from datetime import date, timedelta
 
 if __name__ == "__main__":
