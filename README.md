@@ -1,4 +1,4 @@
-# gpas-covid-synthetic-reads
+# gpas_covid_synthetic_reads
 Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing
 
 ## Installation
@@ -8,15 +8,15 @@ You first need to install [`gumpy`](https://github.com/oxfordmmm/gumpy) as the c
 Once complete, 
 
 ```
-$ git clone https://github.com/GenomePathogenAnalysisService/gpas-covid-synthetic-reads.git
-$ cd gpas-covid-synthetic-reads
+$ git clone https://github.com/GenomePathogenAnalysisService/gpas_covid_synthetic_reads.git
+$ cd gpas_covid_synthetic_reads
 $ python3 setup.py install --user
 ```
 
 Check it has installed correctly
 
 ```
-$ usage: gpas-covid-synthetic-reads.py [-h]
+$ usage: gpas_covid_synthetic_reads.py [-h]
                                      [--variant_definitions VARIANT_DEFINITIONS]
                                      [--pango_definitions PANGO_DEFINITIONS]
                                      [--output OUTPUT]
@@ -101,7 +101,7 @@ $ git clone https://github.com/cov-lineages/constellations.git
 First, we can simply create a set of perfect Illumina reads for the SARS-CoV-2 reference
 
 ```
-$ gpas-covid-synthetic-reads.py --pango_definitions ../constellations/ --output reference --tech illumina --variant_name reference --write_fasta
+$ gpas_covid_synthetic_reads.py --pango_definitions ../constellations/ --output reference --tech illumina --variant_name reference --write_fasta
 $ ls -lrt reference*
 reference.fasta   reference_1.fastq reference_2.fastq
 $ gzip *fastq
@@ -110,7 +110,7 @@ $ gzip *fastq
 Next, let's create two Illumina paried Omicron FASTQ files using the default values for the read length (250) and depth (500).
 
 ```
-$ gpas-covid-synthetic-reads.py --pango_definitions ../constellations/ --output omicron --tech illumina --variant_name omicron --write_fasta
+$ gpas_covid_synthetic_reads.py --pango_definitions ../constellations/ --output omicron --tech illumina --variant_name omicron --write_fasta
 $ ls omicron*
 omicron.fasta   omicron_1.fastq omicron_2.fastq
 $ gzip omicron*fastq
@@ -119,7 +119,7 @@ $ gzip omicron*fastq
 Now we can increase the average depth from the default of 500 to 1000
 
 ```
-$ gpas-covid-synthetic-reads.py --pango_definitions ../constellations/ --output omicron_d1000 --tech illumina --variant_name omicron --write_fasta --depth 1000
+$ gpas_covid_synthetic_reads.py --pango_definitions ../constellations/ --output omicron_d1000 --tech illumina --variant_name omicron --write_fasta --depth 1000
 $ ls omicron_d1000*
 omicron_d1000.fasta   omicron_d1000_1.fastq omicron_d1000_2.fastq
 $ gzip omicron*fastq
@@ -133,12 +133,12 @@ These pairs of `fastq` files (after being compressed using `gzip`) can be used f
 
 ## Docker Use
 
-There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas-covid-synthetic-reads). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
+There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas_covid_synthetic_reads). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
 
 The container can be run with a command such as:
 
 ```
-docker run -v /path/to/output:/output oxfordmmm/gpas-covid-synthetic-reads python3 /gpas-covid-synthetic-reads/bin/gpas-covid-synthetic-reads.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
+docker run -v /path/to/output:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas_covid_synthetic_reads.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
 ```
 
 Philip W Fowler, 18 Feb 2022

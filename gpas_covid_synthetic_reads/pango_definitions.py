@@ -1,7 +1,7 @@
 import copy
 import numpy
 
-import gpas_covid_synreads as gcsr
+import gpas_covid_synthetic_reads as gcsr
 
 class PangoGenome(object):
 
