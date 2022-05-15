@@ -4,16 +4,16 @@ RUN apt update && apt install -y git
 
 RUN git clone https://github.com/phe-genomics/variant_definitions.git && \
     git clone https://github.com/cov-lineages/constellations.git && \
-    git clone https://github.com/GenomePathogenAnalysisService/gpas_covid_synthetic_reads.git
+    git clone https://github.com/GenomePathogenAnalysisService/gpas-covid-synthetic-reads.git
 
-WORKDIR /gpas_covid_synthetic_reads
+WORKDIR /gpas-covid-synthetic-reads
 RUN git clone https://github.com/oxfordmmm/gumpy.git
 
-WORKDIR /gpas_covid_synthetic_reads/gumpy
+WORKDIR /gpas-covid-synthetic-reads/gumpy
 RUN python3 -m pip install --upgrade pip && \
     pip3 install -r requirements.txt && \
     python3 setup.py install --user
 
-WORKDIR /gpas_covid_synthetic_reads
+WORKDIR /gpas-covid-synthetic-reads
 RUN pip3 install -r requirements.txt && \
     python3 setup.py install --user
