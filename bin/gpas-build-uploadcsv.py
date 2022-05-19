@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--organisation",default="University of Oxford",help="the name of the organisation (the user must belong to it otherwise validation will fail)")
     parser.add_argument("--old_format", action="store_true", help="whether to use the original upload CSV format and headers")
-    parser.add_argument("--country",default="United Kingdom",help="the name of the country where the samples were collected")
+    parser.add_argument("--country",default="GBR",help="the name of the country where the samples were collected")
     parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--file_type",default='fastq',help="whether to look for FASTQ or BAM files")
     parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/tags.txt'),help="a plaintext file with one row per tag")

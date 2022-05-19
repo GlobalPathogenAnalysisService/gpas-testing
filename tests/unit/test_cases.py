@@ -6,7 +6,7 @@ covid_reference=gumpy.Genome(pkg_resources.resource_filename("gpas_covid_synthet
 
 def test_pango_definitions():
 
-    pango_definitions=gcsr.load_pango_definitions('../constellations')
+    pango_definitions=gcsr.load_pango_definitions('constellations')
 
     assert 'cBA.1' in pango_definitions.keys()
     assert 'B.1.1.7' not in pango_definitions.keys()
@@ -24,7 +24,7 @@ def test_mutate_read():
 # def test_gamma():
 #
 #     # Chose Gamma because it has one insertion and one deletion
-#     pango_definitions=gcsr.load_pango_definitions('../constellations')
+#     pango_definitions=gcsr.load_pango_definitions('constellations')
 #
 #     gamma=gcsr.PangoGenome(covid_reference, pango_definitions, 'cP.2')
 #
