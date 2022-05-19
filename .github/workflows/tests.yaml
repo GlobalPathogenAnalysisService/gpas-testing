@@ -20,9 +20,9 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Install variant_definitions
+    - name: Install constellations
       run: |
-        git clone https://github.com/phe-genomics/variant_definitions.git
+        git clone https://github.com/cov-lineages/constellations.git
 
     - name: Install gumpy
       run: |
@@ -30,7 +30,8 @@ jobs:
         cd gumpy
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
-        python3 setup.py install --user
+        python setup.py build --force
+        pip install .
         cd ..
 
     - name: Install Python dependencies
@@ -39,7 +40,7 @@ jobs:
 
     - name: Install Python module
       run: |
-        python setup.py develop --user
+        pip install .
 
     - name: Test with pytest
       run: |
