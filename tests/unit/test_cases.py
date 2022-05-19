@@ -21,37 +21,19 @@ def test_mutate_read():
 
     assert gcsr.mutate_read('AAAAA',debug_mutations={1:'A'})=='AAAAA'
 
-# def test_gamma():
-#
-#     # Chose Gamma because it has one insertion and one deletion
-#     pango_definitions=gcsr.load_pango_definitions('constellations')
-#
-#     gamma=gcsr.PangoGenome(covid_reference, pango_definitions, 'cP.2')
-#
-#     start=11280
-#     stop=11305
-#
-#     mask=(gamma.reference.nucleotide_index>start) & (gamma.reference.nucleotide_index<stop)
-#     test_string=''.join(i for i in gamma.reference.nucleotide_sequence[mask])
-#     assert test_string=='tagtttgtctggttttaagctaaa'
-#
-#     test_indices=gamma.index_lookup[(gamma.index_lookup>start) & (gamma.index_lookup<stop)]
-#     mask=numpy.isin(gamma.reference.nucleotide_index,test_indices)
-#     test_string=''.join(i for i in gamma.reference.nucleotide_sequence[mask])
-#     assert test_string=='tagtttgaagctaaa'
-#
-#     start=28258
-#     stop=28268
-#     mask=(gamma.reference.nucleotide_index>start) & (gamma.reference.nucleotide_index<stop)
-#     test_string=''.join(i for i in gamma.reference.nucleotide_sequence[mask])
-#     assert test_string=='aacgaacaa'
-#
-#     gamma_genome = gamma.expected.build_genome_string()
-#
-#     assert len(gamma_genome)==len(gamma.index_lookup)
-#     i0=numpy.where(gamma.index_lookup==start)[0][0]+1
-#     i1=numpy.where(gamma.index_lookup==stop)[0][0]
-#     assert gamma_genome[i0:i1]=='aacgaacaaacaa'
-#
-#
-# # for i in c*csv; do awk -F ',' '(NR>1) {print FILENAME, $5}' $i; done
+def test_gamma():
+
+    # Chose Gamma because it has one insertion and one deletion
+    pango_definitions=gcsr.load_pango_definitions('constellations')
+
+    gamma=gcsr.PangoGenome(covid_reference, pango_definitions, 'cP.1')
+
+    test_string = gamma.reference.build_genome_string(nucleotide_index_range=(11280,11305))
+    assert test_string == 'ctagtttgtctggttttaagctaaa'
+
+    test_string = gamma.expected.build_genome_string(nucleotide_index_range=(11280,11305))
+    assert test_string == 'ctagttttaagctaaa'
+
+    gamma_genome = gamma.expected.build_genome_string()
+
+    assert len(gamma_genome) == 29903-9+4

@@ -82,7 +82,7 @@ if __name__ == "__main__":
         return(rest_of_line)
 
     def build_rest_of_line():
-        # no control at present
+        # no control specified at present
         rest_of_line = ','
         date_collected=str(date.today()-timedelta(days=random.choice(range(7))))
         rest_of_line+=date_collected+','
@@ -97,9 +97,9 @@ if __name__ == "__main__":
                 rest_of_line+=i+':'
             rest_of_line=rest_of_line[:-1]+','
         rest_of_line+=options.country+','
-        # adminstrative domain
+        # adminstrative domain not specified 
         rest_of_line += ','
-        # district
+        # district not specified 
         rest_of_line += ','
         rest_of_line+='SARS-CoV-2,human,'
         if options.tech=='illumina':
