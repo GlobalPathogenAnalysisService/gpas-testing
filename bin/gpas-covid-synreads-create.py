@@ -259,7 +259,7 @@ if __name__ == "__main__":
                     for repeat in range(options.repeats):
 
                         # build an automatic output string if no output is specified or it is a pure directory
-                        if options.output is None or pathlib(options.output).is_dir():
+                        if options.output is None or pathlib.Path(options.output).is_dir():
                             outputstem = options.tech + '-' + primer_name.lower() + '-' + options.variant_name + '-' +\
                                          variant_source + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
                                          str(error_rate) + 'e-'
