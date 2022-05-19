@@ -50,7 +50,7 @@ py.test tests/
 
 This repository contains three scripts that help in creating and analysing batches of SARS-CoV-2 samples using GPAS.
 
-### `gpas-covid-synreads-create.py` 
+### `gpas-covid-synreads-create.py` -- creating synthetic SARS-CoV-2 reads
 
 ```
 usage: gpas-covid-synreads-create.py [-h] [--variant_definitions VARIANT_DEFINITIONS] [--pango_definitions PANGO_DEFINITIONS]
@@ -171,26 +171,12 @@ Given the sequencing technology used, the code will detect the samples where it 
 ```
 gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --number_of_tags 1 --tech illumina > upload.csv
 ```
+You can now use this upload CSV either with the Electron Client or the gpas cli.
 
+## `gpas-covid-synreads-analyse.py` -- checking if the GPAS consensus genome matches what the reads were built from
 
+This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
 
-
-
-
-
-
-```
-$ gpas_covid_synthetic_reads.py --pango_definitions ../constellations/ --output omicron_d1000 --tech illumina --variant_name omicron --write_fasta --depth 1000
-$ ls omicron_d1000*
-omicron_d1000.fasta   omicron_d1000_1.fastq omicron_d1000_2.fastq
-$ gzip omicron*fastq
-```
-
-You can create a larger set of different, synthetic samples for testing using the `--snps` or `--error_rate` flags. Both are stochastic so repeats will produce different samples. Note that the synthetic samples are about 10-100x smaller than real samples so cannot be used for true benchmarking.
-
-These pairs of `fastq` files (after being compressed using `gzip`) can be used for 
-* automated end-to-end testing of bioinformatics workflows, such as GPAS, since you can knows what the expected consensus sequence (the `fasta` file) should be.
-* preliminary testing of new variants 
 
 ## Docker Use
 
@@ -200,7 +186,9 @@ The container can be run with a command such as:
 
 ```
 docker run -v /path/to/output:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas_covid_synthetic_reads.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
+
+docker run -v .:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas-covid-synreads-create.py --pango_definitions /constellations/ --tech illumina --variant_name cBA.1 --write_fasta --output /output/BA.1
 ```
 
-Philip W Fowler, 18 Feb 2022
+Philip W Fowler, 19 May 2022
 
