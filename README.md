@@ -182,6 +182,8 @@ This script compares the output consensus genomes to the genome used to build th
 
 There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas_covid_synthetic_reads). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
 
+(PWF: I've messed with this so it needs updating..)
+
 The container can be run with a command such as:
 
 ```
