@@ -100,4 +100,4 @@ if __name__ == "__main__":
 
     api_calls.to_csv(options.output_csv)
 
-    print("Passes:", (~api_calls.passes).sum()==0)
+    print("Does FN4 pass? ", (~api_calls.passes).sum()==0)
