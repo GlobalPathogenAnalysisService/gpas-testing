@@ -15,13 +15,15 @@ setup(
     url='https://github.com/GenomePathogenAnalysisService/gpas_covid_synthetic_reads',
     scripts=['bin/gpas-covid-synreads-create.py',
              'bin/gpas-build-uploadcsv.py',
-             'bin/gpas-covid-synreads-analyse.py'],
+             'bin/gpas-covid-synreads-analyse.py',
+             'bin/gpas-test-fn4.py'],
     install_requires=[
         'pyfastaq >= 3.17.0',
         'pyyaml',
         'numpy',
         'tqdm',\
-        'pandas'
+        'pandas',\
+        'requests'
         ],
     python_requires='>=3.8',
     license="MIT",
