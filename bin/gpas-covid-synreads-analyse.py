@@ -50,6 +50,7 @@ if __name__ == "__main__":
             for i in INPUT:
                 genome += i.rstrip()
         else:
+            print(filename+ " does not exist! Check you have gunzipped the downloaded FASTA files.")
             genome = ''
 
         return(genome)
