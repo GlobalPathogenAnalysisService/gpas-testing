@@ -122,16 +122,16 @@ if __name__ == "__main__":
 
                                 read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
 
-                                mask = (reference.nucleotide_index<(reference.length+1-read_length))
+                                read_start = numpy.random.choice(reference.nucleotide_index)
 
-                                start = numpy.random.choice(reference.nucleotide_index[mask])
+                                if read_start + read_length > reference.length:
+                                    continue
 
-                                mask = (reference.nucleotide_index>=start) & (reference.nucleotide_index<(start+read_length))
+                                for i in range(read_length):
+                                    coverage[read_start+i]+=2
 
-                                coverage[mask]+=2
-
-                                read1 = input_genome.subseq(start, start + read_length)
-                                read2 = input_genome.subseq(start, start + read_length)
+                                read1 = input_genome.subseq(read_start, read_start + read_length)
+                                read2 = input_genome.subseq(read_start, read_start + read_length)
                                 read2.revcomp()
 
                                 if error_rate > 0:
@@ -163,18 +163,17 @@ if __name__ == "__main__":
                                     print(current_coverage)
                                     prev_coverage = current_coverage
 
-
                                 read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
 
-                                mask = (reference.nucleotide_index<(reference.length+1-read_length))
+                                read_start = numpy.random.choice(reference.nucleotide_index)
 
-                                start = numpy.random.choice(reference.nucleotide_index[mask])
+                                if read_start + read_length > reference.length:
+                                    continue
 
-                                mask = (reference.nucleotide_index>=start) & (reference.nucleotide_index<(start+read_length))
+                                for i in range(read_length):
+                                    coverage[read_start+i]+=1
 
-                                coverage[mask]+=1
-
-                                read1 = input_genome.subseq(start, start + read_length)
+                                read1 = input_genome.subseq(read_start, read_start + read_length)
 
                                 if error_rate > 0:
                                     read1.seq = gcsr.mutate_read(read1.seq, error_rate=error_rate)
