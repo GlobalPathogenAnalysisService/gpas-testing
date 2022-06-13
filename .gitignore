@@ -10,7 +10,8 @@ lineage_report.csv
 # C extensions
 *.so
 *.fasta
-
+*.fastq
+*.fastq.gz 
 # Distribution / packaging
 .Python
 build/

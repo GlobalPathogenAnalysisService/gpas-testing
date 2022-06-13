@@ -16,6 +16,7 @@ setup(
     scripts=['bin/gpas-covid-synreads-create.py',
              'bin/gpas-build-uploadcsv.py',
              'bin/gpas-covid-synreads-analyse.py',
+             'bin/gpas-tb-synreads-create.py',
              'bin/gpas-test-fn4.py'],
     install_requires=[
         'pyfastaq >= 3.17.0',
