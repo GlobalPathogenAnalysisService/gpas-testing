@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
     parser.add_argument("--depth",nargs='+',default=50,type=int,help="the depth (default value is 500)")
     parser.add_argument("--snps",nargs='+',default=[0],type=int,help="the number of snps to randomly introduce into the sequence")
+    parser.add_argument("--variant_file",required=False,type=str,help="an optional file containing one or more genetic variants to add to the sample")
     parser.add_argument("--repeats",default=1,type=int,help="how many repeats to create")
     parser.add_argument("--error_rate",nargs='+',default=[0.0],type=float,help="the percentage base error rate (default value is 0.0)")
     parser.add_argument("--write_fasta", action="store_true", help="whether to write out the FASTA file for the variant")
@@ -30,6 +31,8 @@ if __name__ == "__main__":
 
     if options.debug:
         print('read reference!')
+
+            
 
     error_rates=numpy.array(options.error_rate)/100.
 
@@ -54,7 +57,6 @@ if __name__ == "__main__":
 
             snp_indices = numpy.random.choice(current_variant.nucleotide_index,size=snps,replace=False)
 
-
             for i in snp_indices:
                 mask = current_variant.nucleotide_index == i
                 current_base = current_variant.nucleotide_sequence[mask]
@@ -66,6 +68,25 @@ if __name__ == "__main__":
                 new_bases = bases ^ set(current_base)
                 new_base = random.choice(list(new_bases))
                 current_variant.nucleotide_sequence[mask] = new_base
+
+                print(i, current_base[0], new_base)
+            
+            if options.variant_file:
+
+                assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
+
+                with open(options.variant_file) as handle:
+
+                    for line in handle:
+
+                        cols = line.rstrip().split(' ')
+                        mask = current_variant.nucleotide_index == int(cols[0])
+                        current_base = current_variant.nucleotide_sequence[mask]
+                        assert current_base == cols[1], cols[1]+ current_base
+
+                        current_variant.nucleotide_sequence[mask] = cols[2]
+
+                        print(cols[0], cols[1], cols[2])
 
             if options.debug:
                 print("done!")
@@ -117,7 +138,6 @@ if __name__ == "__main__":
                                 current_coverage = int(numpy.mean(coverage) / 1) * 1
 
                                 if  current_coverage > prev_coverage:
-                                    print(current_coverage)
                                     prev_coverage = current_coverage
 
                                 read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
@@ -160,7 +180,6 @@ if __name__ == "__main__":
                                 current_coverage = int(numpy.mean(coverage) / 10) * 10
 
                                 if  current_coverage > prev_coverage:
-                                    print(current_coverage)
                                     prev_coverage = current_coverage
 
                                 read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))

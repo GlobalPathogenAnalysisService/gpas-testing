@@ -7,6 +7,7 @@ gumpy/
 constellations/
 lineage_report.csv
 
+*~
 # C extensions
 *.so
 *.fasta
