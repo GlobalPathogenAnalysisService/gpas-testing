@@ -1,7 +1,0 @@
-pyfastaq
-numpy
-pyyaml
-pytest
-pytest-cov
-requests
-pandas

@@ -8,12 +8,5 @@ RUN git clone https://github.com/cov-lineages/constellations.git && \
 WORKDIR /gpas-covid-synthetic-reads
 RUN git clone https://github.com/oxfordmmm/gumpy.git
 
-WORKDIR /gpas-covid-synthetic-reads/gumpy
-RUN python3 -m pip install --upgrade pip && \
-    pip3 install -r requirements.txt && \
-    python setup.py build --force && \
-    pip3 install .
-
 WORKDIR /gpas-covid-synthetic-reads
-RUN pip3 install -r requirements.txt && \
-    pip3 install .
+RUN pip3 install .
