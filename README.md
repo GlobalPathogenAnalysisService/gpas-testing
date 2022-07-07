@@ -12,22 +12,7 @@ python -m venv env
 source env/bin/activate
 ```
 
-Now let's manually install two of the dependencies:
-1. [`gumpy`](https://github.com/oxfordmmm/gumpy) which the code uses to build the genome of each sample
-2. [`constellations`](https://github.com/cov-lineages/constellations) which contains SARS-CoV-2 lineage definitions.
-
-For `gumpy` issue
-
-```
-git clone https://github.com/oxfordmmm/gumpy
-cd gumpy
-pip install -r requirements.txt
-python setup.py build --force
-pip install .
-cd ..
-```
-
-Whilst `constellations` is more straightforward 
+Now let's manually download the [`constellations`](https://github.com/cov-lineages/constellations) SARS-CoV-2 lineage definitions
 
 ```
 git clone https://github.com/cov-lineages/constellations.git
@@ -36,7 +21,6 @@ git clone https://github.com/cov-lineages/constellations.git
 Now we can automatically install the rest of dependencies
 
 ```
-pip install -r requirements.txt
 pip install -e .
 ```
 
@@ -192,5 +176,5 @@ docker run -v /path/to/output:/output oxfordmmm/gpas_covid_synthetic_reads pytho
 docker run -v .:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas-covid-synreads-create.py --pango_definitions /constellations/ --tech illumina --variant_name cBA.1 --write_fasta --output /output/BA.1
 ```
 
-Philip W Fowler, 19 May 2022
+Philip W Fowler, 7 July 2022
 
