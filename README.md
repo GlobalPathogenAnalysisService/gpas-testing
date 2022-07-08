@@ -1,4 +1,4 @@
-# gpas_covid_synthetic_reads
+# gpas_testing_
 Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing
 
 ## Installation
@@ -6,8 +6,8 @@ Create perfect FASTQ files for the SARS-CoV-2 WHO lineages for use in testing
 First, let's get the repository and work in a virtual environment
 
 ```
-git clone git@github.com:GenomePathogenAnalysisService/gpas-covid-synthetic-reads.git
-cd gpas-covid-synthetic-reads
+git clone git@github.com:GenomePathogenAnalysisService/gpas-testing.git
+cd gpas-testing
 python -m venv env
 source env/bin/activate
 ```
@@ -24,7 +24,7 @@ Now we can automatically install the rest of dependencies
 pip install -e .
 ```
 
-I've specified the `-e` or `--editable` flag so that if you make changes to the `gpas-covid-synthetic-reads` they will flow through automatically into the installed version so you don't need to reinstall each time. This isn't required if you are using a static version.
+I've specified the `-e` or `--editable` flag so that if you make changes to the `gpas-testing` they will flow through automatically into the installed version so you don't need to reinstall each time. This isn't required if you are using a static version.
 
 Once complete, let's check the modest number of unit tests work
 
@@ -34,10 +34,10 @@ py.test tests/
 
 This repository contains three scripts that help in creating and analysing batches of SARS-CoV-2 samples using GPAS.
 
-### `gpas-covid-synreads-create.py` -- creating synthetic SARS-CoV-2 reads
+### `gpas-synreads-covid-create.py` -- creating synthetic SARS-CoV-2 reads
 
 ```
-usage: gpas-covid-synreads-create.py [-h] [--variant_definitions VARIANT_DEFINITIONS] [--pango_definitions PANGO_DEFINITIONS]
+usage: gpas-synreads-covid-create.py [-h] [--variant_definitions VARIANT_DEFINITIONS] [--pango_definitions PANGO_DEFINITIONS]
                                      [--output OUTPUT] [--variant_name VARIANT_NAME] [--reference REFERENCE] --tech TECH
                                      [--primers PRIMERS [PRIMERS ...]] [--read_length READ_LENGTH]
                                      [--read_stddev READ_STDDEV] [--depth DEPTH [DEPTH ...]] [--depth_stddev DEPTH_STDDEV]
@@ -90,7 +90,7 @@ As described in Installation, you will have already installed the `constellation
 First, we can simply create a set of perfect `cBA.1` Illumina reads 
 
 ```
-gpas-covid-synreads-create.py --pango_definitions constellations/ --tech illumina --variant_name cBA.1 --write_fasta
+gpas-synreads-covid-create.py --pango_definitions constellations/ --tech illumina --variant_name cBA.1 --write_fasta
 ls illumina-*
 illumina-articv3-cBA.1-cov-0snps-500d-0.0e-0.fasta   illumina-articv3-cBA.1-cov-0snps-500d-0.0e-0_2.fastq
 illumina-articv3-cBA.1-cov-0snps-500d-0.0e-0_1.fastq
@@ -101,7 +101,7 @@ Note that the `fastq` files were written uncompressed, so the first thing we nee
 Let's make somthing a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
 
 ```
-gpas-covid-synreads-create.py --pango_definitions constellations/ --tech nanopore --variant_name cBA.3 --write_fasta --depth 400 --read_stddev 100 --primers midnight1200 --snps 2 --error_rate 2 --drop_amplicons 2 --write_fasta
+gpas-synreads-covid-create.py --pango_definitions constellations/ --tech nanopore --variant_name cBA.3 --write_fasta --depth 400 --read_stddev 100 --primers midnight1200 --snps 2 --error_rate 2 --drop_amplicons 2 --write_fasta
 ls nanopore-*
 nanopore-midnight1200-cBA.3-cov-2snps-400d-0.02e-a2da-0.fasta nanopore-midnight1200-cBA.3-cov-2snps-400d-0.02e-a2da-0.fastq
 $ gzip nanopore*fastq
@@ -114,7 +114,7 @@ For demonstration purposes, let's build a simple batch of Illumina cBA.2 samples
 ```
 mkdir batch-0
 cd batch-0
-gpas-covid-synreads-create.py --pango_definitions constellations/ --tech illumina --variant_name cBA.2 --write_fasta --depth 300 --read_stddev 100 --primers articv4 --snps 2 --error_rate 1 --write_fasta --repeats 3
+gpas-synreads-covid-create.py --pango_definitions constellations/ --tech illumina --variant_name cBA.2 --write_fasta --depth 300 --read_stddev 100 --primers articv4 --snps 2 --error_rate 1 --write_fasta --repeats 3
 gzip *fastq
 ```
 
@@ -157,23 +157,23 @@ gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --
 ```
 You can now use this upload CSV either with the Electron Client or the gpas cli.
 
-## `gpas-covid-synreads-analyse.py` -- checking if the GPAS consensus genome matches what the reads were built from
+## `gpas-synreads-covid-create.py` -- checking if the GPAS consensus genome matches what the reads were built from
 
 This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
 
 
 ## Docker Use
 
-There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas_covid_synthetic_reads). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
+There is a Dockerfile provided to make your own container or an image available in Dockerhub (oxfordmmm/gpas_testing). Both versions put the `constellations` and `variant_definitions` directories at the root of the container.
 
 (PWF: I've messed with this so it needs updating..)
 
 The container can be run with a command such as:
 
 ```
-docker run -v /path/to/output:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas_covid_synthetic_reads.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
+docker run -v /path/to/output:/output oxfordmmm/gpas_testing python3 /gpas_testing/bin/gpas_testing.py  --pango_definitions /constellations/ --output /output/reference --tech illumina --variant_name reference --write_fasta 
 
-docker run -v .:/output oxfordmmm/gpas_covid_synthetic_reads python3 /gpas_covid_synthetic_reads/bin/gpas-covid-synreads-create.py --pango_definitions /constellations/ --tech illumina --variant_name cBA.1 --write_fasta --output /output/BA.1
+docker run -v .:/output oxfordmmm/gpas_testing python3 /gpas_testing/bin/gpas-synreads-covid-create.py --pango_definitions /constellations/ --tech illumina --variant_name cBA.1 --write_fasta --output /output/BA.1
 ```
 
 Philip W Fowler, 7 July 2022

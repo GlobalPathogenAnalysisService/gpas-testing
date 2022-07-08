@@ -1,7 +1,7 @@
 import copy
 import numpy
 
-import gpas_covid_synthetic_reads as gcsr
+import gpas_testing
 
 class PangoGenome(object):
 
@@ -18,7 +18,7 @@ class PangoGenome(object):
         else:
             self.indels = indels
 
-        self.amino_acid_to_codon = gcsr.create_amino_acid_to_codon(self.expected)
+        self.amino_acid_to_codon = gpas_testing.create_amino_acid_to_codon(self.expected)
 
         if self.name != 'reference':
             self._create_variant()
@@ -179,7 +179,7 @@ class PangoGenome(object):
                         possible_codons = self.amino_acid_to_codon[alt]
 
                         # work out which of these requires the fewest number of base changes
-                        new_codon = gcsr.determine_closet_codon(current_codon, possible_codons)
+                        new_codon = gpas_testing.determine_closet_codon(current_codon, possible_codons)
 
                         # find out the genome nucleotide indices corresponding to this codon
                         idx=gene.nucleotide_index[gene.gene_position==aa_num]

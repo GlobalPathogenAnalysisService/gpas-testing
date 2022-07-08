@@ -3,7 +3,7 @@
 import pandas
 
 import gumpy
-import gpas_covid_synthetic_reads as gcsr
+import gpas_testing
 
 covid_reference = gumpy.Genome('MN908947.3.gbk')
 
@@ -50,7 +50,7 @@ for primer_name in ['covid-artic-v3', 'covid-artic-v4', 'covid-midnight-1200', '
     amplicons['end'] = amplicons['end_right']
     amplicons['length'] = amplicons['end'] - amplicons['start']
 
-    amplicons[['start_amplicon', 'end_amplicon']] = amplicons.apply(gcsr.define_amplicon,
+    amplicons[['start_amplicon', 'end_amplicon']] = amplicons.apply(gpas_testing.define_amplicon,
                                                                     amplicons=amplicons,
                                                                     reference_genome=covid_reference,
                                                                     axis=1)

@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("--country",default="GBR",help="the name of the country where the samples were collected")
     parser.add_argument("--tech",default='illumina',help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--file_type",default='fastq',help="whether to look for FASTQ or BAM files")
-    parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_covid_synthetic_reads", 'data/tags.txt'),help="a plaintext file with one row per tag")
+    parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_testing", 'data/tags.txt'),help="a plaintext file with one row per tag")
     parser.add_argument("--uuid_length",default='long',help="whether to use a long or short UUID4")
     parser.add_argument("--number_of_tags",default=2,type=int,help="how many tags to give each sample. Can be zero, or up to the number of rows in <tag_file>. Default is 2 so as to test the delimiter")
     parser.add_argument("--old_format", action="store_true", help="whether to use the original upload CSV format and headers")

@@ -95,7 +95,7 @@ def mutate_read(read,error_rate=0,snps=0,debug_mutations=None):
 
 def load_lineages_dataframe():
 
-    cov_lineages = pkg_resources.resource_filename('gpas_covid_synthetic_reads','data/cov-lineages.csv')
+    cov_lineages = pkg_resources.resource_filename('gpas_testing','data/cov-lineages.csv')
 
     lineages_reference = pandas.read_csv(cov_lineages)
 
