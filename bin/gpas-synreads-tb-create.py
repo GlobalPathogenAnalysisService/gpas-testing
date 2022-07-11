@@ -153,8 +153,8 @@ if __name__ == "__main__":
                                 read2.revcomp()
 
                                 if error_rate > 0:
-                                    read1.seq = gpas-testing.mutate_read(read1.seq, error_rate=error_rate)
-                                    read2.seq = gpas-testing.mutate_read(read2.seq, error_rate=error_rate)
+                                    read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
+                                    read2.seq = gpas_testing.mutate_read(read2.seq, error_rate=error_rate)
 
                                 read1.id = f"{read_number}.{i} /1"
                                 read2.id = f"{read_number}.{i} /2"
@@ -193,7 +193,7 @@ if __name__ == "__main__":
                                 read1 = input_genome.subseq(read_start, read_start + read_length)
 
                                 if error_rate > 0:
-                                    read1.seq = gpas-testing.mutate_read(read1.seq, error_rate=error_rate)
+                                    read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
 
                                 if numpy.random.choice([True, False]):
                                     read1.id = f"{read_number}.{i} forward"
