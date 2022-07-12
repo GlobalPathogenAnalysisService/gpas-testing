@@ -122,7 +122,7 @@ In this folder we have three pairs of gzipped FASTQ files we can upload and, cru
 
 Now we can use the next script
 
-## `gpas-build-uploadcsv.py` -- automatically creating an upload CSV
+## `gpas-build-uploadcsv.py` - automatically creating an upload CSV
 
 One can always write manually an upload CSV but is time-consuming, boring and can introduce mistakes, hence this helper script. If you run it in a folder that contains gzipped fastq files (like `batch-0`) and give it some arguments it will create a valid upload CSV for you that you can then use either with the Electron Client / App or the CLI to upload the batch to GPAS for processing.
 
@@ -157,9 +157,13 @@ gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --
 ```
 You can now use this upload CSV either with the Electron Client or the gpas cli.
 
-## `gpas-synreads-covid-create.py` -- checking if the GPAS consensus genome matches what the reads were built from
+## `gpas-synreads-covid-create.py` - checking if the GPAS consensus genome matches what the reads were built from
 
 This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
+
+## Cultured "truth" samples
+
+These can be obtained from these two ENA projects: [PRJEB50520](https://www.ebi.ac.uk/ena/browser/view/PRJEB50520) and [PRJEB51850](https://www.ebi.ac.uk/ena/browser/view/PRJEB51850) with `vcf` files describing the variation w.r.t the Wuhan reference found [here](https://github.com/iqbal-lab-org/covid-truth-datasets).
 
 
 ## Docker Use
