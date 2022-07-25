@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         cols = line.rstrip().split(' ')
                         mask = current_variant.nucleotide_index == int(cols[0])
                         current_base = current_variant.nucleotide_sequence[mask]
-                        assert current_base == cols[1], cols[1]+ current_base
+                        assert current_base == cols[1], cols[1]
 
                         current_variant.nucleotide_sequence[mask] = cols[2]
 
