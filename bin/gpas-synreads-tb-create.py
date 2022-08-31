@@ -74,15 +74,32 @@ if __name__ == "__main__":
                 assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
 
                 with open(options.variant_file) as handle:
-
+                    offset = 0 #Offset to account for indels
                     for line in handle:
 
                         cols = line.rstrip().split(' ')
-                        mask = current_variant.nucleotide_index == int(cols[0])
-                        current_base = current_variant.nucleotide_sequence[mask]
-                        assert current_base == cols[1], cols[1]
+                        pos = int(cols[0]) + offset
+                        if cols[1] == 'ins':
+                            #Ins
+                            bases = list(cols[2])
+                            #Insert the bases
+                            current_variant.nucleotide_sequence = numpy.insert(current_variant.nucleotide_sequence, pos+1, bases)
+                            #Add to the offset to allow adjusted pos
+                            offset += len(bases)
+                        if cols[1] == 'del':
+                            #Del
+                            #Del specified by `<pos> del <n bases>`
+                            bases = int(cols[2])
+                            current_variant.nucleotide_sequence = numpy.delete(current_variant.nucleotide_sequence, range(pos+1, pos+bases+1))
+                            #Subtract from offset to allow adjusted pos
+                            offset -= bases
+                        else:
+                            #SNPs
+                            mask = current_variant.nucleotide_index == pos
+                            current_base = current_variant.nucleotide_sequence[mask]
+                            assert current_base == cols[1], cols[1]
 
-                        current_variant.nucleotide_sequence[mask] = cols[2]
+                            current_variant.nucleotide_sequence[mask] = cols[2]
 
                         print(cols[0], cols[1], cols[2])
 
@@ -100,7 +117,7 @@ if __name__ == "__main__":
         if options.debug:
             print("done!")
 
-        for depth in options.depth:
+        for depth in range(options.depth):
 
             for error_rate in error_rates:
 

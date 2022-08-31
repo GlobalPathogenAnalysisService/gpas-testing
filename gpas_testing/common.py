@@ -68,29 +68,44 @@ def mutate_read(read,error_rate=0,snps=0,debug_mutations=None):
 
         bases={'A','T','C','G'}
 
-        # create a list of new mutations
-        new_bases=[]
-
-        # convert the read into an array of chars
-        r=numpy.array(list(read))
 
         if debug_mutations is None:
-
-            for i in r[mask]:
-                new_bases.append(random.sample(bases ^ set(i),1)[0])
+            #Old version took ~0.002s, this takes ~0.0006s
+            return ''.join(
+                getNewBase(read[index]) if mask[index] 
+                else read[index] 
+                for index in range(len(read))
+                )
 
         else:
+            # create a list of new mutations
+            new_bases=[]
+
+            # convert the read into an array of chars
+            r=numpy.array(list(read))
 
             new_bases=list(debug_mutations.values())
             print(new_bases,list(debug_mutations.values()))
 
-        # set the new values
-        r[mask]=numpy.array(new_bases)
+            # set the new values
+            r[mask]=numpy.array(new_bases)
 
-        # recreate the sequence
-        sequence=''.join(i for i in r)
+            # recreate the sequence
+            sequence=''.join(i for i in r)
 
-        return(sequence)
+            return sequence
+
+def getNewBase(original: str) -> str:
+    '''Get a new base at random which is not the original
+
+    Args:
+        original (str): Original base
+
+    Returns:
+        str: New base which is not the original
+    '''
+    bases = list({'A','T','C','G'}.difference(original))
+    return random.choice(bases)
 
 
 def load_lineages_dataframe():
