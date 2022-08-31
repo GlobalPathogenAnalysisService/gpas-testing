@@ -1,0 +1,164 @@
+#!/usr/bin/python3
+
+import argparse
+import functools
+import pathlib
+import pickle
+import random
+from time import time
+
+import gpas_testing
+import gumpy
+import numpy
+import pyfastaq
+
+#Force flush on print for use with timing utilities via pipe
+#This allows running `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
+print = functools.partial(print, flush=True)
+
+def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
+    '''Mutate a given nucleotide sequence with a given file
+
+    Args:
+        reference (gumpy.Genome): gumpy Genome of reference
+        path (str): Path to the file detailing variants
+
+    Returns:
+        numpy.array: Mutated nucleotide sequence
+    '''
+    current_variant = reference.nucleotide_sequence
+    #Index array to store reference genome indicies
+    #Updated with -1 values for ins positions and deleted values for del positions
+    current_index = reference.nucleotide_index
+    with open(path) as handle:
+        for line in handle:
+            # print("|"+line.strip()+"|")
+            if line.strip() == '' or line[0] == '#':
+                #Ignore blank lines and comments
+                continue
+            cols = line.rstrip().split(' ')
+            pos = int(cols[0]) #1-indexed sequence index
+            if cols[1] == 'ins':
+                #Ins specified by `<pos> ins <bases>`
+                bases = list(cols[2])
+                #Insert the bases
+                #Use the index to get the position (ins happens after given pos)
+                pos = numpy.where(current_index == pos+1)[0][0]
+                current_variant = numpy.insert(current_variant, pos, bases)
+                #Pad the index with extra None values
+                current_index = numpy.insert(current_index, pos, [-1 for i in bases])
+            elif cols[1] == 'del':
+                #Del specified by `<pos> del <n bases>`
+                bases = int(cols[2])
+                #Use the index to get the position (del happens at given pos)
+                pos = numpy.where(current_index == pos)[0][0]
+                current_variant = numpy.delete(current_variant, range(pos, pos+bases))
+                current_index = numpy.delete(current_index, range(pos, pos+bases))
+            else:
+                #SNPs specified by `<pos> <ref> <alt>`
+                mask = current_index == pos
+                current_base = current_variant[mask][0]
+                assert current_base == cols[1], f"{cols[1]} != {current_base}"
+
+                current_variant[mask] = cols[2]
+    # print()
+    return current_variant
+
+def buildFastq(sequence: numpy.array, depth: int, read_length: int, ID: str, out: str, error_rate: float) -> None:
+    '''Convert a sequence into a fastq file with the specified depth and read length
+
+    Args:
+        sequence (numpy.array): Nucleotide sequence
+        depth (int): Depth of reads (generally 15 is enough for >99.9999% coverage depending on read length)
+        read_length (int): Length of reads
+        ID (str): Sample ID
+        out (str): Path to the desired output
+        error_rate (float): Percentage error to include in the FASTQs
+    '''
+    #Use pyfastaq's fastq for easy access to subsequences and revcomp
+    seq = pyfastaq.sequences.Fasta(id_in=ID,seq_in=''.join(sequence).upper())
+    seq = seq.to_Fastq([93] * len(sequence))
+
+    #Storing the areas of the genome which have >=1 read overall
+    overallReadExists = numpy.array([False for i in sequence])
+    with open(out+"_1.fastq", "a+") as f1, open(out+"_2.fastq", "a+") as f2:
+        for d in range(depth):
+            #True where >=1 read exists 
+            readExists = numpy.array([False for i in sequence])
+            readNum = 0
+            #Coverage here is the percentage of the genome covered by the reads
+            coverage = numpy.sum(readExists) / len(sequence)
+
+            #Debugging vars
+            milestone = 0.1
+            increment = 0.1
+            avgTime = []
+            #Take random reads until (arbitrarily) >95% of the genome is covered
+            while coverage < 0.95:
+                start = time()
+                #Pick a random start
+                read_start = random.randint(0, len(sequence)-read_length-1)
+
+                #Show that these bases have been read
+                readExists[read_start:read_start+read_length] = True
+
+                #Get the actual reads
+                read1 = seq.subseq(read_start, read_start + read_length)
+                read2 = seq.subseq(read_start, read_start + read_length)
+                read2.revcomp()
+
+                if error_rate > 0:
+                    read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
+                    read2.seq = gpas_testing.mutate_read(read2.seq, error_rate=error_rate)
+
+                #Write the reads
+                #Not too sure on the logic for this ID, but it seems to work...
+                read1.id = f"{readNum}.{read_start} /1"
+                read2.id = f"{readNum}.{read_start} /2"
+
+                print(read1, file=f1)
+                print(read2, file=f2)
+
+                read1.id = f"{readNum}.{read_start}.2 /2"
+                read2.id = f"{readNum}.{read_start}.2 /1"
+
+                print(read1, file=f2)
+                print(read2, file=f1)
+
+                #Update coverage
+                coverage = numpy.sum(readExists) / len(sequence)
+
+                #Debug things...
+                if coverage > milestone:
+                    #Print every 10% increment in coverage
+                    print(f"Coverage: {coverage*100}% @ {readNum} reads @ {sum(avgTime)/len(avgTime)}")
+                    milestone += increment
+
+                readNum += 1
+                avgTime.append(time()-start)
+
+            overallReadExists = numpy.logical_or(overallReadExists, readExists)
+            print(f"Finished depth: {d}, overall coverage: {(numpy.sum(overallReadExists)/len(sequence))*100}%")
+            print()
+    print(f"Finished with overall coverage: {(numpy.sum(overallReadExists)/len(sequence))*100}%")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--reference", required=True, help="Path to the reference genome")
+    parser.add_argument("--depth", required=True, type=int, help="Depth of the reads")
+    parser.add_argument("--read_length", required=True, type=int, help="Read length")
+    parser.add_argument("--variant_file", required=True, help="Path to a file detailing mutations")
+    parser.add_argument("--error_rate", required=False, default=0,type=float,help="The percentage base error rate as a decimal i.e in range [0,1]")
+    parser.add_argument("--output", required=True, help="Path to the stem of the VCF")
+    options = parser.parse_args()
+
+    # reference = gumpy.Genome(options.reference, show_progress_bar=True)
+    # pickle.dump(reference, open("reference.pkl", "wb"))
+    reference = pickle.load(open("reference.pkl", "rb"))
+
+
+    assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
+    current_variant = mutateWithFile(reference, options.variant_file)
+
+    buildFastq(current_variant, options.depth, options.read_length, reference.name, options.output, options.error_rate)

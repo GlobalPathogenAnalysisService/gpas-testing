@@ -165,6 +165,37 @@ This script compares the output consensus genomes to the genome used to build th
 
 These can be obtained from these two ENA projects: [PRJEB50520](https://www.ebi.ac.uk/ena/browser/view/PRJEB50520) and [PRJEB51850](https://www.ebi.ac.uk/ena/browser/view/PRJEB51850) with `vcf` files describing the variation w.r.t the Wuhan reference found [here](https://github.com/iqbal-lab-org/covid-truth-datasets).
 
+## `tb-synreads` - Generate TB synthetic reads from a specified file
+Use a file which specifies variants to generate synthetic paired FASTQ files.
+```
+usage: tb-synreads [-h] --reference REFERENCE --depth DEPTH --read_length READ_LENGTH --variant_file VARIANT_FILE [--error_rate ERROR_RATE] --output OUTPUT
+
+options:
+  -h, --help            show this help message and exit
+  --reference REFERENCE
+                        Path to the reference genome
+  --depth DEPTH         Depth of the reads
+  --read_length READ_LENGTH
+                        Read length
+  --variant_file VARIANT_FILE
+                        Path to a file detailing mutations
+  --error_rate ERROR_RATE
+                        The percentage base error rate as a decimal i.e in range [0,1]
+  --output OUTPUT       Path to the stem of the VCF
+```
+File specification
+```
+#This is a comment
+
+#Specify a SNP
+<pos> <ref> <alt>
+
+#Specify an insertion
+<pos> ins <bases>
+
+#Specify a deletion
+<pos> del <number of bases>
+```
 
 ## Docker Use
 

@@ -1,0 +1,51 @@
+#SNPs with known resistance predictions
+761155 c t
+2155168 c g
+2288836 c t
+7570 c t
+7585 g c
+4247431 g t
+1473246 a g
+
+#Indels with known resistance predictions
+761097 ins cca
+1918210 del 2
+
+
+#Adding multiple SNPs to check for known multi-mutations with resistance predictions
+#Note that ethA is revComp so indicies and bases may look weird at first
+#Non-changes have been included here for verbosity
+
+#ethA@V419V gtc->gtt
+4326219 c c
+4326218 a a
+4326217 g a
+
+#ethA@E420R gag->agg
+4326216 c t
+4326215 t c
+4326214 c c
+
+#ethA@R421A cga->gca
+4326213 g c
+4326212 c g
+4326211 t t
+
+#ethA@P422T ccg->acg
+4326210 g t
+4326209 g g
+4326208 c c
+
+
+#Some longer indels
+#katG@1441_ins_gcggcggcgggtacgccagctttgatc
+2154671 ins gcggcggcgggtacgccagctttgatc
+
+#tlyA@95_del_gcgcatcgacgggctgccggcggtcaagccggccaccgccgtgtccgac
+1918034 del 49
+
+#Multi with SNP and indel
+#gid@54_del_tgctcggcggtacgccgaa&gid@G34G ggg->gga
+4408131 del 19
+4408102 c t
+
