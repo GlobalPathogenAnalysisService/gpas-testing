@@ -32,7 +32,7 @@ def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
     current_index = reference.nucleotide_index
     with open(path) as handle:
         for line in handle:
-            print("|"+line.strip()+"|")
+            # print("|"+line.strip()+"|")
             if line.strip() == '' or line[0] == '#':
                 #Ignore blank lines and comments
                 continue
@@ -52,7 +52,6 @@ def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
                 bases = int(cols[2])
                 #Use the index to get the position (del happens at given pos)
                 pos = numpy.where(current_index == pos)[0][0]
-                print("Deleting: ", current_variant[pos:pos+bases])
                 current_variant = numpy.delete(current_variant, range(pos, pos+bases))
                 current_index = numpy.delete(current_index, range(pos, pos+bases))
             else:
@@ -62,7 +61,7 @@ def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
                 assert current_base == cols[1], f"{cols[1]} != {current_base}"
 
                 current_variant[mask] = cols[2]
-    print()
+    # print()
     return current_variant
 
 def buildFastq(sequence: numpy.array, depth: int, read_length: int, ID: str, out: str, error_rate: float) -> None:
