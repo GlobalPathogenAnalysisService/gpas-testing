@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--output",required=False,help="the stem of the output file")
-    parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_testing", 'data/MN908947.3.gbk'),help="the GenBank file of the covid reference (if not specified, the MN908947.3.gbk reference will be used)")
+    parser.add_argument("--reference",required=False,default=pkg_resources.resource_filename("gpas_testing", 'data/NC_000962.3.gbk.gz'),help="the GenBank file of the covid reference (if not specified, the NC_000962.3.gbk reference will be used)")
     parser.add_argument("--tech",required=True,help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         if options.debug:
             print("done!")
 
-        for depth in range(options.depth):
+        for depth in options.depth:
 
             for error_rate in error_rates:
 
