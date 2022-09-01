@@ -38,8 +38,8 @@
 
 
 #Some longer indels
-#katG@1441_ins_gcggcggcgggtacgccagctttgatc
-2154671 ins gcggcggcgggtacgccagctttgatc
+#katG@1441_ins_ctagtttcgaccgcatgggcggcggcg
+2154671 ins cgccgccgcccatgcggtcgaaactag
 
 #tlyA@95_del_gcgcatcgacgggctgccggcggtcaagccggccaccgccgtgtccgac
 1918034 del 49
@@ -47,5 +47,5 @@
 #Multi with SNP and indel
 #gid@54_del_tgctcggcggtacgccgaa&gid@G34G ggg->gga
 4408131 del 19
-4408102 c t
+4408101 c t
 

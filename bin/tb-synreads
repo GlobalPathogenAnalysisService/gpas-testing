@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     # reference = gumpy.Genome(options.reference, show_progress_bar=True)
     # pickle.dump(reference, open("reference.pkl", "wb"))
-    reference = pickle.load(open("reference.pkl", "rb"))
+    reference = pickle.load(open("../reference.pkl", "rb"))
 
 
     assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
