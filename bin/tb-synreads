@@ -5,16 +5,13 @@ import functools
 import pathlib
 import pickle
 import random
+import os
 from time import time
 
 import gpas_testing
 import gumpy
 import numpy
 import pyfastaq
-
-#Force flush on print for use with timing utilities via pipe
-#This allows running `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
-print = functools.partial(print, flush=True)
 
 def mutateWithFile(reference: gumpy.Genome, path: str, lineage: int) -> numpy.array:
     '''Mutate a given nucleotide sequence with a given file
@@ -185,16 +182,25 @@ if __name__ == "__main__":
     parser.add_argument("--depth", required=True, type=int, help="Depth of the reads")
     parser.add_argument("--read_length", required=True, type=int, help="Read length")
     parser.add_argument("--variant_file", required=True, help="Path to a file detailing mutations")
-    parser.add_argument("--error_rate", required=False, default=0,type=float,help="The percentage base error rate as a decimal i.e in range [0,1]")
+    parser.add_argument("--error_rate", required=False, default=0,type=float,help="The percentage base error rate as a decimal ∈ [0,1]")
     parser.add_argument("--output", required=True, help="Path to the stem of the VCF")
-    parser.add_argument("--lineage", required=False, default=None, type=int, help="A lineage number ∈ [2, 3]")
+    parser.add_argument("--lineage", required=False, default=None, type=int, help="A lineage number ∈ {2, 3}")
+    parser.add_argument("--verbose", action="store_true", required=False, default=False, help="Whether to be verbose")
     options = parser.parse_args()
 
-    assert options.lineage in [2, 3, None], "Lineage must be one of [2, 3, None]"
+    assert options.lineage in [2, 3, None], "Specified lineage must be one of {2, 3}"
 
-    # reference = gumpy.Genome(options.reference, show_progress_bar=True)
+    #Force flush on print for use with timing utilities via pipe
+    #This allows running `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
+    if options.verbose:
+        print = functools.partial(print, flush=True)
+    else:
+        #If no verbose flag, send all prints to null
+        print = functools.partial(print, flush=True, file=open(os.devnull, 'w'))
+
+    reference = gumpy.Genome(options.reference, show_progress_bar=True)
     # pickle.dump(reference, open("reference.pkl", "wb"))
-    reference = pickle.load(open("../reference.pkl", "rb"))
+    # reference = pickle.load(open("../reference.pkl", "rb"))
 
 
     assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
