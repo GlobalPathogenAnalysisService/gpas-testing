@@ -182,7 +182,7 @@ options:
   --error_rate ERROR_RATE
                         The percentage base error rate as a decimal i.e in range [0,1]
   --output OUTPUT       Path to the stem of the VCF
-  --lineage LINEAGE     A lineage number ∈ [2, 3]
+  --lineage LINEAGE     A lineage number ∈ {2, 3}
 ```
 File specification
 ```
