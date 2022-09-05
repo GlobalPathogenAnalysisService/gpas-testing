@@ -166,7 +166,7 @@ This script compares the output consensus genomes to the genome used to build th
 These can be obtained from these two ENA projects: [PRJEB50520](https://www.ebi.ac.uk/ena/browser/view/PRJEB50520) and [PRJEB51850](https://www.ebi.ac.uk/ena/browser/view/PRJEB51850) with `vcf` files describing the variation w.r.t the Wuhan reference found [here](https://github.com/iqbal-lab-org/covid-truth-datasets).
 
 ## `tb-synreads` - Generate TB synthetic reads from a specified file
-Use a file which specifies variants to generate synthetic paired FASTQ files. 
+Use a file which specifies variants to generate synthetic paired FASTQ files. Generally for a 0% error rate, a depth of 20 and read length of 300 is enough to reliably produce VCFs from lodestone. For an error rate >0%, a depth of 50 and read length of 300 is not sufficient.
 ```
 usage: tb-synreads [-h] --reference REFERENCE --depth DEPTH --read_length READ_LENGTH --variant_file VARIANT_FILE [--error_rate ERROR_RATE] --output OUTPUT
 

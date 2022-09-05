@@ -16,12 +16,13 @@ import pyfastaq
 #This allows running `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
 print = functools.partial(print, flush=True)
 
-def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
+def mutateWithFile(reference: gumpy.Genome, path: str, lineage: int) -> numpy.array:
     '''Mutate a given nucleotide sequence with a given file
 
     Args:
         reference (gumpy.Genome): gumpy Genome of reference
         path (str): Path to the file detailing variants
+        lineage (int): Lineage number
 
     Returns:
         numpy.array: Mutated nucleotide sequence
@@ -30,14 +31,49 @@ def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
     #Index array to store reference genome indicies
     #Updated with -1 values for ins positions and deleted values for del positions
     current_index = reference.nucleotide_index
+
+    #Quickly deal with the lineage SNPs
+    if lineage is not None:
+        print(f"Starting with lineage {lineage}. Lineage definining SNPs:")
+        with open(f"tests/tb-test-lineage{lineage}-vanilla.txt") as f:
+            for line in f:
+                if line.strip() == '' or line[0] == '#':
+                    #Ignore blank lines and comments
+                    continue
+                pos, ref, alt = line.rstrip().split(" ")
+                pos = int(pos)
+                print(pos, ref, alt)
+                mask = current_index == pos
+                current_base = current_variant[mask][0]
+                assert current_base == ref, f"{ref} != {current_base}"
+
+                current_variant[mask] = alt
+        print()
+
+    #Keep track of what has been seen to avoid duplicates
+    seen = set()
+    seenPos = set()
     with open(path) as handle:
         for line in handle:
-            # print("|"+line.strip()+"|")
+            if line in seen:
+                #Skip duplicate lines
+                continue
+
+            print("|"+line.strip()+"|")
             if line.strip() == '' or line[0] == '#':
                 #Ignore blank lines and comments
                 continue
             cols = line.rstrip().split(' ')
             pos = int(cols[0]) #1-indexed sequence index
+
+            if pos in seenPos:
+                #Complain if referring to the same position in >1 line
+                raise ValueError(f"The same position has been used in >1 lines: {pos}")
+
+            #Valid line so update seen
+            seen.add(line)
+            seenPos.add(pos)
+
             if cols[1] == 'ins':
                 #Ins specified by `<pos> ins <bases>`
                 bases = list(cols[2])
@@ -61,7 +97,7 @@ def mutateWithFile(reference: gumpy.Genome, path: str) -> numpy.array:
                 assert current_base == cols[1], f"{cols[1]} != {current_base}"
 
                 current_variant[mask] = cols[2]
-    # print()
+    print()
     return current_variant
 
 def buildFastq(sequence: numpy.array, depth: int, read_length: int, ID: str, out: str, error_rate: float) -> None:
@@ -151,7 +187,10 @@ if __name__ == "__main__":
     parser.add_argument("--variant_file", required=True, help="Path to a file detailing mutations")
     parser.add_argument("--error_rate", required=False, default=0,type=float,help="The percentage base error rate as a decimal i.e in range [0,1]")
     parser.add_argument("--output", required=True, help="Path to the stem of the VCF")
+    parser.add_argument("--lineage", required=False, default=None, type=int, help="A lineage number ∈ [2, 3]")
     options = parser.parse_args()
+
+    assert options.lineage in [2, 3, None], "Lineage must be one of [2, 3, None]"
 
     # reference = gumpy.Genome(options.reference, show_progress_bar=True)
     # pickle.dump(reference, open("reference.pkl", "wb"))
@@ -159,6 +198,6 @@ if __name__ == "__main__":
 
 
     assert pathlib.Path(options.variant_file).is_file(), "file does not exist!"
-    current_variant = mutateWithFile(reference, options.variant_file)
+    current_variant = mutateWithFile(reference, options.variant_file, options.lineage)
 
     buildFastq(current_variant, options.depth, options.read_length, reference.name, options.output, options.error_rate)
