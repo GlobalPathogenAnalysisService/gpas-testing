@@ -3,13 +3,11 @@
 2155168 c g
 2288836 c t
 7570 c t
-7585 g c
 4247431 g t
 1473246 a g
 
 #Indels with known resistance predictions
 761097 ins cca
-1918210 del 2
 
 
 #Adding multiple SNPs to check for known multi-mutations with resistance predictions
@@ -48,4 +46,35 @@
 #gid@54_del_tgctcggcggtacgccgaa&gid@G34G ggg->gga
 4408131 del 19
 4408101 c t
+
+#Weirder multi of synonymous mutations
+#gyrA@A434A gca->gcg
+8603 a g
+#gyrA@A445A gca->gcg
+8636 a g
+#gyrA@E447E gaa->gag
+8642 a g
+#gyrA@L440L ttg->tta
+8621 g a
+#gyrA@R441R cgg->cga
+8624 g a
+#gyrA@R442R cgc->cga
+8627 c a
+#gyrA@R448R cgc->cga
+8645 c a
+
+
+#Some mutations which have S predictions
+#gyrA@A384V gca->gta
+8452 c t
+#gyrA@S95T agc->acc
+7585 g c
+
+#Non-AA SNPs
+#rrs@g1483t
+1473329 g t
+#rrs@a513c
+1472359 a c
+#gyrA@c-34t
+7268 c t
 
