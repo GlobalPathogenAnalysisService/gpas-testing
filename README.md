@@ -166,9 +166,9 @@ This script compares the output consensus genomes to the genome used to build th
 These can be obtained from these two ENA projects: [PRJEB50520](https://www.ebi.ac.uk/ena/browser/view/PRJEB50520) and [PRJEB51850](https://www.ebi.ac.uk/ena/browser/view/PRJEB51850) with `vcf` files describing the variation w.r.t the Wuhan reference found [here](https://github.com/iqbal-lab-org/covid-truth-datasets).
 
 ## `tb-synreads` - Generate TB synthetic reads from a specified file
-Use a file which specifies variants to generate synthetic paired FASTQ files. Generally for a 0% error rate, a depth of 20 and read length of 300 is enough to reliably produce VCFs from lodestone. For an error rate >0%, a depth of 50 and read length of 300 is not sufficient.
+Use a file which specifies variants to generate synthetic paired FASTQ files. Generally for a 0% error rate, a depth of 20 and read length of 300 is enough to reliably produce VCFs from lodestone. Error rates of Illumina sequencers vary between [0.6-0.087%](https://academic.oup.com/nargab/article/3/1/lqab019/6193612), and using the lower end of this, reads can be successfully generated with a depth of 30 and a read length of 300.
 ```
-usage: tb-synreads [-h] --reference REFERENCE --depth DEPTH --read_length READ_LENGTH --variant_file VARIANT_FILE [--error_rate ERROR_RATE] --output OUTPUT
+usage: tb-synreads [-h] --reference REFERENCE --depth DEPTH --read_length READ_LENGTH --variant_file VARIANT_FILE [--error_rate ERROR_RATE] --output OUTPUT [--lineage LINEAGE]
 
 options:
   -h, --help            show this help message and exit
@@ -182,6 +182,7 @@ options:
   --error_rate ERROR_RATE
                         The percentage base error rate as a decimal i.e in range [0,1]
   --output OUTPUT       Path to the stem of the VCF
+  --lineage LINEAGE     A lineage number ∈ [2, 3]
 ```
 File specification
 ```
@@ -196,7 +197,14 @@ File specification
 #Specify a deletion
 <pos> del <number of bases>
 ```
-Has been developed so that the output can be piped to timing utilities: `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
+This has been developed so that the output can be piped to timing utilities: `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
+
+
+Example of generating synthetic reads from a given lineage and file:
+```
+tb-synreads --reference <path to H37rV_v3.gbk> --depth 30 --read_length 300 --variant_file tests/tb-resistant-1.txt --output ./syn-illumina-d30-rl300  --error_rate 0.00087 | ts '[%H:%M:%.S]'
+```
+This will produce synthetic reads with depth of 30 and read length of 300, the known mutations defined in `tests/tb-resistant-1.txt`, and an error rate of `0.087%` within the files `syn-illumina-d30-rl300_1.fastq` and `syn-illumina-d30-rl300_2.fastq`
 
 ## Docker Use
 
