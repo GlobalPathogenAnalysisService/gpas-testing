@@ -157,9 +157,9 @@ gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --
 ```
 You can now use this upload CSV either with the Electron Client or the gpas cli.
 
-## `gpas-synreads-covid-create.py` - checking if the GPAS consensus genome matches what the reads were built from
+## `gpas-synreads-covid-analyse.py` - checking if the GPAS consensus genome matches what the reads were built from
 
-This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
+This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`. Set to True the parameter --test_report to generate a csv test report called `test_report.csv`
 
 ## Cultured "truth" samples
 
