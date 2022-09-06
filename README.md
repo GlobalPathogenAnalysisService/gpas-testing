@@ -98,7 +98,7 @@ gzip illumina*fastq
 ```
 Note that the `fastq` files were written uncompressed, so the first thing we need to do is `gzip` them. Also note that since we didn't tell the code what to call the files (using `--output`) it has given the files a hierarchial descriptive name. As you can see lot's of options have taken their default values, e.g. the default amplicon scheme is Artic v3, the default depth is 500 reads, there are no errors and no SNPs.
 
-Let's make somthing a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
+Let's make something a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
 
 ```
 gpas-synreads-covid-create.py --pango_definitions constellations/ --tech nanopore --variant_name cBA.3 --write_fasta --depth 400 --read_stddev 100 --primers midnight1200 --snps 2 --error_rate 2 --drop_amplicons 2 --write_fasta
