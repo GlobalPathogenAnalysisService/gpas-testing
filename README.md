@@ -98,7 +98,7 @@ gzip illumina*fastq
 ```
 Note that the `fastq` files were written uncompressed, so the first thing we need to do is `gzip` them. Also note that since we didn't tell the code what to call the files (using `--output`) it has given the files a hierarchial descriptive name. As you can see lot's of options have taken their default values, e.g. the default amplicon scheme is Artic v3, the default depth is 500 reads, there are no errors and no SNPs.
 
-Let's make somthing a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
+Let's make something a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
 
 ```
 gpas-synreads-covid-create.py --pango_definitions constellations/ --tech nanopore --variant_name cBA.3 --write_fasta --depth 400 --read_stddev 100 --primers midnight1200 --snps 2 --error_rate 2 --drop_amplicons 2 --write_fasta
@@ -157,9 +157,9 @@ gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --
 ```
 You can now use this upload CSV either with the Electron Client or the gpas cli.
 
-## `gpas-synreads-covid-create.py` - checking if the GPAS consensus genome matches what the reads were built from
+## `gpas-synreads-covid-analyse.py` - checking if the GPAS consensus genome matches what the reads were built from
 
-This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
+This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`. Set to True the parameter --test_report to generate a csv test report called `test_report.csv`
 
 ## Cultured "truth" samples
 
