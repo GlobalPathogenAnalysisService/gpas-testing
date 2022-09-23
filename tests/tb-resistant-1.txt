@@ -7,6 +7,7 @@
 1473246 a g
 
 #Indels with known resistance predictions
+#This has some weird behaviour within lodestone - it is identified as ins_aac for some reason...
 761097 ins cca
 
 
@@ -43,25 +44,27 @@
 1918034 del 49
 
 #Multi with SNP and indel
-#gid@54_del_tgctcggcggtacgccgaa&gid@G34G ggg->gga
+#gid@54_del_tgctcggcggtacgccgaa&gid@G34G&gid@g102c ggg->ggc
 4408131 del 19
-4408101 c t
+4408101 c g
 
 #Weirder multi of synonymous mutations
+#gyrA@A434A&gyrA@A445A&gyrA@E447E&gyrA@L440L&gyrA@R441R&gyrA@R442R&gyrA@R448R&
+#gyrA@a1302g& gyrA@a1335c gyrA@a1341g &gyrA@c1326g &gyrA@c1344g &gyrA@g1323c &gyrA@t1318c
 #gyrA@A434A gca->gcg
 8603 a g
-#gyrA@A445A gca->gcg
-8636 a g
+#gyrA@A445A gca->gcc
+8636 a c
 #gyrA@E447E gaa->gag
 8642 a g
-#gyrA@L440L ttg->tta
-8621 g a
-#gyrA@R441R cgg->cga
-8624 g a
-#gyrA@R442R cgc->cga
-8627 c a
+#gyrA@L440L ttg->ctg
+8619 t c
+#gyrA@R441R cgg->cgc
+8624 g c
+#gyrA@R442R cgc->cgg
+8627 c g
 #gyrA@R448R cgc->cga
-8645 c a
+8645 c g
 
 
 #Some mutations which have S predictions
