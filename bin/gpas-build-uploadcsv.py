@@ -17,6 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_testing", 'data/tags.txt'),help="a plaintext file with one row per tag")
     parser.add_argument("--uuid_length",default='long',help="whether to use a long or short UUID4")
     parser.add_argument("--number_of_tags",default=2,type=int,help="how many tags to give each sample. Can be zero, or up to the number of rows in <tag_file>. Default is 2 so as to test the delimiter")
+    parser.add_argument("--rename", action="store_true", help="whether to rename the FASTQ files using a simple sample00, sample01 scheme.")
     parser.add_argument("--old_format", action="store_true", help="whether to use the original upload CSV format and headers")
     parser.add_argument("--organisation",default="University of Oxford",help="the name of the organisation (the user must belong to it otherwise validation will fail)")
     options = parser.parse_args()
@@ -115,6 +116,8 @@ if __name__ == "__main__":
         batch = 'B-' + str(uuid.uuid4())[-6:]
         run = str(uuid.uuid4())[-5:]
 
+    file_counter = 0
+
     for i in file_list:
 
         if options.file_type == 'fastq':
@@ -129,6 +132,10 @@ if __name__ == "__main__":
             lineage=i.split('_')[0]
         else:
             lineage=filename
+
+        if options.rename:
+            lineage = 'sample%03d' % (file_counter)
+            file_counter += 1
 
         if options.uuid_length == 'long':
             uid=str(uuid.uuid4())
