@@ -1,0 +1,80 @@
+#SNPs with known resistance predictions
+761155 c t
+2155168 c g
+2288836 c t
+7570 c t
+4247431 g t
+1473246 a g
+
+#Indels with known resistance predictions
+761097 ins cca
+
+
+#Adding multiple SNPs to check for known multi-mutations with resistance predictions
+#Note that ethA is revComp so indicies and bases may look weird at first
+#Non-changes have been included here for verbosity
+
+#ethA@V419V gtc->gtt
+4326219 c c
+4326218 a a
+4326217 g a
+
+#ethA@E420R gag->agg
+4326216 c t
+4326215 t c
+4326214 c c
+
+#ethA@R421A cga->gca
+4326213 g c
+4326212 c g
+4326211 t t
+
+#ethA@P422T ccg->acg
+4326210 g t
+4326209 g g
+4326208 c c
+
+
+#Some longer indels
+#katG@1441_ins_ctagtttcgaccgcatgggcggcggcg
+2154671 ins cgccgccgcccatgcggtcgaaactag
+
+#tlyA@95_del_gcgcatcgacgggctgccggcggtcaagccggccaccgccgtgtccgac
+1918034 del 49
+
+#Multi with SNP and indel
+#gid@54_del_tgctcggcggtacgccgaa&gid@G34G ggg->gga
+4408131 del 19
+4408101 c t
+
+#Weirder multi of synonymous mutations
+#gyrA@A434A gca->gcg
+8603 a g
+#gyrA@A445A gca->gcg
+8636 a g
+#gyrA@E447E gaa->gag
+8642 a g
+#gyrA@L440L ttg->tta
+8621 g a
+#gyrA@R441R cgg->cga
+8624 g a
+#gyrA@R442R cgc->cga
+8627 c a
+#gyrA@R448R cgc->cga
+8645 c a
+
+
+#Some mutations which have S predictions
+#gyrA@A384V gca->gta
+8452 c t
+#gyrA@S95T agc->acc
+7585 g c
+
+#Non-AA SNPs
+#rrs@g1483t
+1473329 g t
+#rrs@a513c
+1472359 a c
+#gyrA@c-34t
+7268 c t
+

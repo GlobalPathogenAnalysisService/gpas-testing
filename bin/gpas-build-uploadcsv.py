@@ -16,7 +16,9 @@ if __name__ == "__main__":
     parser.add_argument("--file_type",default='fastq',help="whether to look for FASTQ or BAM files")
     parser.add_argument("--tag_file",default=pkg_resources.resource_filename("gpas_testing", 'data/tags.txt'),help="a plaintext file with one row per tag")
     parser.add_argument("--uuid_length",default='long',help="whether to use a long or short UUID4")
-    parser.add_argument("--number_of_tags",default=2,type=int,help="how many tags to give each sample. Can be zero, or up to the number of rows in <tag_file>. Default is 2 so as to test the delimiter")
+    parser.add_argument("--simple", action="store_true", help="whether to rename the FASTQ files using a simple sample00, sample01 scheme.")
+    parser.add_argument("--number_of_tags",default=1,type=int,help="how many tags to give each sample. Can be zero, or up to the number of rows in <tag_file>. Default is 1.")
+    parser.add_argument("--no_rename", action="store_true", help="whether to rename the files or not.")
     parser.add_argument("--old_format", action="store_true", help="whether to use the original upload CSV format and headers")
     parser.add_argument("--organisation",default="University of Oxford",help="the name of the organisation (the user must belong to it otherwise validation will fail)")
     options = parser.parse_args()
@@ -32,15 +34,25 @@ if __name__ == "__main__":
 
     assert options.number_of_tags > 0
     assert options.number_of_tags <= len(tags)
-
+    
     if options.file_type == 'fastq':
+
         if options.tech == 'illumina':
+
             if options.old_format:
                 header = 'name,fastq1,fastq2,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
             else:
                 header = 'batch,run_number,sample_name,fastq1,fastq2,control,collection_date,tags,country,region,district,specimen_organism,host,instrument_platform,primer_scheme'
-            file_list = glob.glob('*_1.fastq.gz')
-            file_extensions = ['_1.fastq.gz','_2.fastq.gz']
+
+            if glob.glob('*_1.fastq.gz'):
+                illumina_includes_r = False
+                file_list = glob.glob('*_1.fastq.gz')
+                file_extensions = ['_1.fastq.gz','_2.fastq.gz']
+            else:
+                illumina_includes_r = True
+                file_list = glob.glob('*_R1.fastq.gz')
+                file_extensions = ['_R1.fastq.gz','_R2.fastq.gz']
+                
         elif options.tech == 'nanopore':
             if options.old_format:
                 header = 'name,fastq,organisation,tags,specimenOrganism,host,collectionDate,country,submissionTitle,submissionDescription,instrument_platform,instrument_model,flowcell'
@@ -115,20 +127,29 @@ if __name__ == "__main__":
         batch = 'B-' + str(uuid.uuid4())[-6:]
         run = str(uuid.uuid4())[-5:]
 
+    file_counter = 0
+
     for i in file_list:
 
         if options.file_type == 'fastq':
             if options.tech=='illumina':
-                filename=i.split('_1.fastq.gz')[0]
+                if illumina_includes_r:
+                    filename=i.split('_R1.fastq.gz')[0]
+                else:
+                    filename=i.split('_1.fastq.gz')[0]
             elif options.tech=='nanopore':
                 filename=i.split('.fastq.gz')[0]
         else:
             filename=i.split('.bam')[0]
 
-        if '_' in filename:
+        if '_' in filename and not options.no_rename:
             lineage=i.split('_')[0]
         else:
             lineage=filename
+
+        if options.simple:
+            lineage = 'sample%03d' % (file_counter)
+            file_counter += 1
 
         if options.uuid_length == 'long':
             uid=str(uuid.uuid4())
@@ -141,22 +162,38 @@ if __name__ == "__main__":
             rest_of_line=build_rest_of_line()
 
         for file_extension in file_extensions:
-            os.rename(filename+file_extension,lineage+"_"+uid+file_extension)
+            if not options.no_rename:
+                os.rename(filename+file_extension,lineage+"_"+uid+file_extension)
 
         if options.file_type == 'fastq':
             if options.tech=='illumina':
                 if options.old_format:
-                    line=lineage+"_"+uid+','+lineage+"_"+uid+'_1.fastq.gz,'+lineage+"_"+uid+'_2.fastq.gz,'+rest_of_line
+                    if illumina_includes_r:
+                        line=lineage+"_"+uid+','+lineage+"_"+uid+'_R1.fastq.gz,'+lineage+"_"+uid+'_R2.fastq.gz,'+rest_of_line                        
+                    else:
+                        line=lineage+"_"+uid+','+lineage+"_"+uid+'_1.fastq.gz,'+lineage+"_"+uid+'_2.fastq.gz,'+rest_of_line
+                elif options.no_rename:
+                    if illumina_includes_r:
+                        line=batch+','+run+','+lineage+','+lineage+'_R1.fastq.gz,'+lineage+'_R2.fastq.gz,'+rest_of_line
+                    else:
+                        line=batch+','+run+','+lineage+','+lineage+'_1.fastq.gz,'+lineage+'_2.fastq.gz,'+rest_of_line
                 else:
-                    line=batch+','+run+','+lineage+'_'+uid+','+lineage+"_"+uid+'_1.fastq.gz,'+lineage+"_"+uid+'_2.fastq.gz,'+rest_of_line
+                    if illumina_includes_r:
+                        line=batch+','+run+','+lineage+'_'+uid+','+lineage+"_"+uid+'_R1.fastq.gz,'+lineage+"_"+uid+'_R2.fastq.gz,'+rest_of_line
+                    else:
+                        line=batch+','+run+','+lineage+'_'+uid+','+lineage+"_"+uid+'_1.fastq.gz,'+lineage+"_"+uid+'_2.fastq.gz,'+rest_of_line                        
             elif options.tech=='nanopore':
                 if options.old_format:
                     line=lineage+"_"+uid+','+lineage+"_"+uid+'.fastq.gz,'+rest_of_line
+                elif options.no_rename:
+                    line=batch+','+run+','+lineage+','+lineage+'.fastq.gz,'+rest_of_line
                 else:
                     line=batch+','+run+','+lineage+'_'+uid+','+lineage+"_"+uid+'.fastq.gz,'+rest_of_line
         else:
             if options.old_format:
                 line=lineage+"_"+uid+','+lineage+"_"+uid+'.bam,'+rest_of_line
+            elif options.no_rename:
+                line=batch+','+run+','+lineage+','+lineage+'.bam,'+rest_of_line
             else:
                 line=batch+','+run+','+lineage+"_"+uid+','+lineage+"_"+uid+'.bam,'+rest_of_line
         print(line)

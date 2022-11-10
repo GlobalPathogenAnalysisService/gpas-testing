@@ -98,7 +98,7 @@ gzip illumina*fastq
 ```
 Note that the `fastq` files were written uncompressed, so the first thing we need to do is `gzip` them. Also note that since we didn't tell the code what to call the files (using `--output`) it has given the files a hierarchial descriptive name. As you can see lot's of options have taken their default values, e.g. the default amplicon scheme is Artic v3, the default depth is 500 reads, there are no errors and no SNPs.
 
-Let's make somthing a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
+Let's make something a bit more realistic; a `cBA.3` sample that has 'been' sequenced with Nanopore using the Midnight primers. This sample has a mean depth of 500 and a standard deviation of 100 so there is a reasonable probability one or more amplicons only have a read depth of 250. One of the amplicons (2) has no reads associated with it and all the reads have a 2% error rate. This sample is 2 SNPs away from the `cBA.3` reference definition.
 
 ```
 gpas-synreads-covid-create.py --pango_definitions constellations/ --tech nanopore --variant_name cBA.3 --write_fasta --depth 400 --read_stddev 100 --primers midnight1200 --snps 2 --error_rate 2 --drop_amplicons 2 --write_fasta
@@ -157,14 +157,54 @@ gpas-build-uploadcsv.py --country USA --tag_file tags.txt --uuid_length short --
 ```
 You can now use this upload CSV either with the Electron Client or the gpas cli.
 
-## `gpas-synreads-covid-create.py` - checking if the GPAS consensus genome matches what the reads were built from
+## `gpas-synreads-covid-analyse.py` - checking if the GPAS consensus genome matches what the reads were built from
 
-This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`.
+This script compares the output consensus genomes to the genome used to build the FASTQ files and will declare success if the input genome contains the output genome and the latter is longer than 29k bases. It also compares the input lineage to the detected lineage. Since it requires the sample to be run through GPAS I won't describe it more here but it does assume you have the file mapping the local to gpas identifiers, which here I will call `sample_names.csv`. Set to True the parameter --test_report to generate a csv test report called `test_report.csv`
 
 ## Cultured "truth" samples
 
 These can be obtained from these two ENA projects: [PRJEB50520](https://www.ebi.ac.uk/ena/browser/view/PRJEB50520) and [PRJEB51850](https://www.ebi.ac.uk/ena/browser/view/PRJEB51850) with `vcf` files describing the variation w.r.t the Wuhan reference found [here](https://github.com/iqbal-lab-org/covid-truth-datasets).
 
+## `tb-synreads` - Generate TB synthetic reads from a specified file
+Use a file which specifies variants to generate synthetic paired FASTQ files. Generally for a 0% error rate, a depth of 20 and read length of 300 is enough to reliably produce VCFs from lodestone. Error rates of Illumina sequencers vary between [0.6-0.087%](https://academic.oup.com/nargab/article/3/1/lqab019/6193612), and using the lower end of this, reads can be successfully generated with a depth of 30 and a read length of 300.
+```
+usage: tb-synreads [-h] --reference REFERENCE --depth DEPTH --read_length READ_LENGTH --variant_file VARIANT_FILE [--error_rate ERROR_RATE] --output OUTPUT [--lineage LINEAGE]
+
+options:
+  -h, --help            show this help message and exit
+  --reference REFERENCE
+                        Path to the reference genome
+  --depth DEPTH         Depth of the reads
+  --read_length READ_LENGTH
+                        Read length
+  --variant_file VARIANT_FILE
+                        Path to a file detailing mutations
+  --error_rate ERROR_RATE
+                        The percentage base error rate as a decimal i.e in range [0,1]
+  --output OUTPUT       Path to the stem of the VCF
+  --lineage LINEAGE     A lineage number ∈ {2, 3}
+```
+File specification
+```
+#This is a comment
+
+#Specify a SNP
+<pos> <ref> <alt>
+
+#Specify an insertion
+<pos> ins <bases>
+
+#Specify a deletion
+<pos> del <number of bases>
+```
+This has been developed so that the output can be piped to timing utilities: `tb-synreads ... | ts '[%H:%M:%.S]` for timestamped output
+
+
+Example of generating synthetic reads from a given lineage and file:
+```
+tb-synreads --reference <path to H37rV_v3.gbk> --depth 30 --read_length 300 --variant_file tests/tb-resistant-1.txt --output ./syn-illumina-d30-rl300  --error_rate 0.00087 | ts '[%H:%M:%.S]'
+```
+This will produce synthetic reads with depth of 30 and read length of 300, the known mutations defined in `tests/tb-resistant-1.txt`, and an error rate of `0.087%` within the files `syn-illumina-d30-rl300_1.fastq` and `syn-illumina-d30-rl300_2.fastq`
 
 ## Docker Use
 
