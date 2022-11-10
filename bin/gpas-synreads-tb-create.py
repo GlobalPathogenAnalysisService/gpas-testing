@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--tech",required=True,help="whether to generate illumina (paired) or nanopore (unpaired) reads")
     parser.add_argument("--read_length",default=None,type=int,help="if specified, the read length in bases, otherwise defaults to the whole amplicon")
     parser.add_argument("--read_stddev",default=0,type=int,help="the standard deviation in the read lengths (default value is 0)")
-    parser.add_argument("--depth",nargs='+',default=50,type=int,help="the depth (default value is 500)")
+    parser.add_argument("--depth",default=50,type=int,help="the depth (default value is 50)")
     parser.add_argument("--snps",nargs='+',default=[0],type=int,help="the number of snps to randomly introduce into the sequence")
     parser.add_argument("--variant_file",required=False,type=str,help="an optional file containing one or more genetic variants to add to the sample")
     parser.add_argument("--repeats",default=1,type=int,help="how many repeats to create")
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         if options.debug:
             print("done!")
 
-        for depth in options.depth:
+        for depth in range(options.depth):
 
             for error_rate in error_rates:
 
