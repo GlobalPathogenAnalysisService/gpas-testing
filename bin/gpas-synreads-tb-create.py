@@ -117,112 +117,112 @@ if __name__ == "__main__":
         if options.debug:
             print("done!")
 
-        for depth in range(options.depth):
+        depth = options.depth
 
-            for error_rate in error_rates:
+        for error_rate in error_rates:
 
-                assert 100>error_rate>=0
+            assert 100>error_rate>=0
 
-                for repeat in range(options.repeats):
+            for repeat in range(options.repeats):
 
-                    # build an automatic output string if no output is specified or it is a pure directory
-                    if options.output is None or pathlib.Path(options.output).is_dir():
-                        outputstem = reference.name + '-' + options.tech + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
-                                     str(error_rate) + 'e-'
-                        outputstem += str(repeat)
-                    else:
-                        outputstem = options.output
+                # build an automatic output string if no output is specified or it is a pure directory
+                if options.output is None or pathlib.Path(options.output).is_dir():
+                    outputstem = reference.name + '-' + options.tech + '-' + str(snps) + 'snps-' + str(depth) + 'd-' +\
+                                    str(error_rate) + 'e-'
+                    outputstem += str(repeat)
+                else:
+                    outputstem = options.output
 
-                    # if options.write_fasta:
-                    #
-                    #     current_variant.save_fasta(outputstem+".fasta",\
-                    #                                 fixed_length=False,\
-                    #                                 overwrite_existing=True,\
-                    #                                 description=current_variant.name)
+                # if options.write_fasta:
+                #
+                #     current_variant.save_fasta(outputstem+".fasta",\
+                #                                 fixed_length=False,\
+                #                                 overwrite_existing=True,\
+                #                                 description=current_variant.name)
 
-                    coverage = numpy.zeros(reference.length)
-                    read_number = 0
-                    prev_coverage = 0
+                coverage = numpy.zeros(reference.length)
+                read_number = 0
+                prev_coverage = 0
 
-                    if options.tech=='illumina':
+                if options.tech=='illumina':
 
-                        with open(outputstem+"_1.fastq", "w") as f1, open(outputstem+"_2.fastq", "w") as f2:
+                    with open(outputstem+"_1.fastq", "w") as f1, open(outputstem+"_2.fastq", "w") as f2:
 
-                            while numpy.mean(coverage)<depth:
+                        while numpy.mean(coverage)<depth:
 
-                                current_coverage = int(numpy.mean(coverage) / 1) * 1
+                            current_coverage = int(numpy.mean(coverage) / 1) * 1
 
-                                if  current_coverage > prev_coverage:
-                                    prev_coverage = current_coverage
+                            if  current_coverage > prev_coverage:
+                                prev_coverage = current_coverage
 
-                                read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
+                            read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
 
-                                read_start = numpy.random.choice(reference.nucleotide_index)
+                            read_start = numpy.random.choice(reference.nucleotide_index)
 
-                                if read_start + read_length > reference.length:
-                                    continue
+                            if read_start + read_length > reference.length:
+                                continue
 
-                                for i in range(read_length):
-                                    coverage[read_start+i]+=2
+                            for i in range(read_length):
+                                coverage[read_start+i]+=2
 
-                                read1 = input_genome.subseq(read_start, read_start + read_length)
-                                read2 = input_genome.subseq(read_start, read_start + read_length)
-                                read2.revcomp()
+                            read1 = input_genome.subseq(read_start, read_start + read_length)
+                            read2 = input_genome.subseq(read_start, read_start + read_length)
+                            read2.revcomp()
 
-                                if error_rate > 0:
-                                    read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
-                                    read2.seq = gpas_testing.mutate_read(read2.seq, error_rate=error_rate)
+                            if error_rate > 0:
+                                read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
+                                read2.seq = gpas_testing.mutate_read(read2.seq, error_rate=error_rate)
 
-                                read1.id = f"{read_number}.{i} /1"
-                                read2.id = f"{read_number}.{i} /2"
+                            read1.id = f"{read_number}.{i} /1"
+                            read2.id = f"{read_number}.{i} /2"
 
+                            print(read1, file=f1)
+                            print(read2, file=f2)
+
+                            read1.id = f"{read_number}.{i}.2 /2"
+                            read2.id = f"{read_number}.{i}.2 /1"
+                            print(read1, file=f2)
+                            print(read2, file=f1)
+
+                            read_number+=1
+
+                elif options.tech == 'nanopore':
+
+                    with open(outputstem+".fastq", "w") as f1:
+
+                        while numpy.mean(coverage)<depth:
+
+                            current_coverage = int(numpy.mean(coverage) / 10) * 10
+
+                            if  current_coverage > prev_coverage:
+                                prev_coverage = current_coverage
+
+                            read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
+
+                            read_start = numpy.random.choice(reference.nucleotide_index)
+
+                            if read_start + read_length > reference.length:
+                                continue
+
+                            for i in range(read_length):
+                                coverage[read_start+i]+=1
+
+                            read1 = input_genome.subseq(read_start, read_start + read_length)
+
+                            if error_rate > 0:
+                                read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
+
+                            if numpy.random.choice([True, False]):
+                                read1.id = f"{read_number}.{i} forward"
                                 print(read1, file=f1)
-                                print(read2, file=f2)
+                            else:
+                                read1.id = f"{read_number}.{i}.2 reverse"
+                                read1.revcomp()
+                                print(read1, file=f1)
 
-                                read1.id = f"{read_number}.{i}.2 /2"
-                                read2.id = f"{read_number}.{i}.2 /1"
-                                print(read1, file=f2)
-                                print(read2, file=f1)
+                            read_number+=1
 
-                                read_number+=1
+                else:
+                    raise ValueError("--tech must be one of illumina or nanopore!")
 
-                    elif options.tech == 'nanopore':
-
-                        with open(outputstem+".fastq", "w") as f1:
-
-                            while numpy.mean(coverage)<depth:
-
-                                current_coverage = int(numpy.mean(coverage) / 10) * 10
-
-                                if  current_coverage > prev_coverage:
-                                    prev_coverage = current_coverage
-
-                                read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
-
-                                read_start = numpy.random.choice(reference.nucleotide_index)
-
-                                if read_start + read_length > reference.length:
-                                    continue
-
-                                for i in range(read_length):
-                                    coverage[read_start+i]+=1
-
-                                read1 = input_genome.subseq(read_start, read_start + read_length)
-
-                                if error_rate > 0:
-                                    read1.seq = gpas_testing.mutate_read(read1.seq, error_rate=error_rate)
-
-                                if numpy.random.choice([True, False]):
-                                    read1.id = f"{read_number}.{i} forward"
-                                    print(read1, file=f1)
-                                else:
-                                    read1.id = f"{read_number}.{i}.2 reverse"
-                                    read1.revcomp()
-                                    print(read1, file=f1)
-
-                                read_number+=1
-
-                    else:
-                        raise ValueError("--tech must be one of illumina or nanopore!")
-
-                    print(read_number, numpy.min(coverage), numpy.max(coverage), numpy.sum(coverage>=10))
+                print(read_number, numpy.min(coverage), numpy.max(coverage), numpy.sum(coverage>=10))
