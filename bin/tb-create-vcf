@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+import pandas as pd
+import argparse
+import pkg_resources
+import pathlib
+
+def convert_to_vcf(input_file, output_file):
+
+    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+        # Write VCF header lines
+        outfile.write('##fileformat=VCFv4.2\n')
+        outfile.write('##reference=NC_000962.3\n')
+        outfile.write('##ALT=<ID=NON_REF,Description="Represents any possible alternative allele at this location">\n')
+        outfile.write('##INFO=<ID=VARIANT,Type=String,Description="The Gene affected by SNP including the amino acid ref, alt and position">\n')
+        outfile.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
+        outfile.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample1\n')
+        
+        # Skip the header line in the input file
+        infile.readline()
+
+        # Parse input file and write to VCF file
+        for line in infile:
+            # Split line by tab character
+            fields = line.strip().split('\t')
+            chrom, pos, _id, ref, alt, qual, filter_, gene, variant, _ = fields
+
+            # Write VCF record
+            outfile.write(f'{chrom}\t{pos}\t{_id}\t{ref}\t{alt}\t{qual}\t{filter_}\tGene={gene};Variant={variant}\tGT\t1/1\n')
+
+if __name__ == "__main__":
+
+    default_input_file = pkg_resources.resource_filename("gpas_testing", "data/" + 'NC_000962.3_WHO-UCN-GTB-PCI-2021.7_v1.0_GARC1_RUS_SNPs.tsv')
+
+    parser = argparse.ArgumentParser(description='Convert a tab-separated file to a VCF file')
+    parser.add_argument('--input_file', default=default_input_file, help='Path to a TSV file specifying the mutations to randomly choose from')
+    parser.add_argument('--output_stem', help='Path to output file')
+    args = parser.parse_args()
+
+    # Check that the provided input file existsz
+    assert(pathlib.Path(args.input_file).is_file())
+
+    # Load in the list of mutations 
+    df = pd.read_csv(args.input_file, sep='\t')
+
+    # Group by 'INFO:Gene' column and choose 1 random row from each group and re-index to 'CHROM' 
+    sampled_df = df.groupby('INFO:Gene', group_keys=False).apply(lambda x: x.sample(n=min(1, len(x))))
+    sampled_df = sampled_df.set_index('CHROM')
+
+    #write that df out as a txt to convert to a VCF
+    sampled_df.to_csv(args.output_stem + '.tsv', sep='\t')
+
+    convert_to_vcf(args.output_stem + '.tsv', args.output_stem + '.vcf')

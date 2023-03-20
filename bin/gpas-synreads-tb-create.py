@@ -144,16 +144,19 @@ if __name__ == "__main__":
                 read_number = 0
                 prev_coverage = 0
 
+                progress_bar = tqdm(total=depth)
+
                 if options.tech=='illumina':
 
                     with open(outputstem+"_1.fastq", "w") as f1, open(outputstem+"_2.fastq", "w") as f2:
 
                         while numpy.mean(coverage)<depth:
 
-                            current_coverage = int(numpy.mean(coverage) / 1) * 1
+                            current_coverage = int(numpy.mean(coverage))
 
                             if  current_coverage > prev_coverage:
                                 prev_coverage = current_coverage
+                                progress_bar.update(1)
 
                             read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
 
@@ -192,10 +195,11 @@ if __name__ == "__main__":
 
                         while numpy.mean(coverage)<depth:
 
-                            current_coverage = int(numpy.mean(coverage) / 10) * 10
+                            current_coverage = int(numpy.mean(coverage) / 5) * 5
 
                             if  current_coverage > prev_coverage:
                                 prev_coverage = current_coverage
+                                print(current_coverage)
 
                             read_length =  int(numpy.random.normal(options.read_length, options.read_stddev))
 
