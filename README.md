@@ -12,10 +12,19 @@ python -m venv env
 source env/bin/activate
 ```
 
-Now let's manually download the [`constellations`](https://github.com/cov-lineages/constellations) SARS-CoV-2 lineage definitions
+For SARS-CoV-2: Now let's manually download the [`constellations`](https://github.com/cov-lineages/constellations) lineage definitions
 
 ```
 git clone https://github.com/cov-lineages/constellations.git
+```
+
+For Mycobacteria if we are using `tb-create-vcf` we will need to install [`NEAT`](https://github.com/ncsa/NEAT) to be installed
+
+```
+git clone https://github.com/ncsa/NEAT.git
+cd NEAT
+pip install -e .
+cd ..
 ```
 
 Now we can automatically install the rest of dependencies
